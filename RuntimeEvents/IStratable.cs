@@ -1,6 +1,6 @@
 ﻿namespace DVG.Core
 {
-    public interface IStratable
+    public interface IStartable
     {
         public void Start();
     }
