@@ -1,6 +1,6 @@
 ﻿namespace DVG.Core
 {
-    public interface ITickable
+    public interface ITickable : IPlayerLoopItem
     {
         public void Tick();
     }

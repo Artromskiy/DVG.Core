@@ -1,6 +1,6 @@
 ﻿namespace DVG.Core
 {
-    public interface IStartable
+    public interface IStartable:IPlayerLoopItem
     {
         public void Start();
     }
