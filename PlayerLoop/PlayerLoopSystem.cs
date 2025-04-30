@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DVG.Core
 {
-    public class PlayerLoopSystem : IPlayerLoopSystem
+    public sealed class PlayerLoopSystem : IPlayerLoopSystem
     {
         private readonly HashSet<ITickable> _tickables = new();
         private readonly HashSet<IFixedTickable> _fixedTickables = new();
@@ -13,8 +13,13 @@ namespace DVG.Core
 
         public event Action<Exception>? ExceptionHandler;
 
+        private bool _disposed;
+
         public void Add(IPlayerLoopItem item)
         {
+            if (_disposed)
+                return;
+
             TryAddToSet(_startables, item);
             TryAddToSet(_tickables, item);
             TryAddToSet(_fixedTickables, item);
@@ -22,6 +27,9 @@ namespace DVG.Core
 
         public void Remove(IPlayerLoopItem item)
         {
+            if (_disposed)
+                return;
+
             _toRemove.Add(item);
         }
 
@@ -99,6 +107,14 @@ namespace DVG.Core
             if (set.Remove(castedItem))
                 return;
             ExceptionHandler?.Invoke(new InvalidOperationException($"object of type {item.GetType().FullName} is already removed from loop. Probably object is disposed multiple times"));
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            _startables.Clear();
+            _tickables.Clear();
+            _fixedTickables.Clear();
         }
     }
 }
