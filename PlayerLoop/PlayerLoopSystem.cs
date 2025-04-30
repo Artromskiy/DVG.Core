@@ -41,7 +41,7 @@ namespace DVG.Core
                 {
                     item.Start();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     ExceptionHandler?.Invoke(e);
                 }
@@ -57,7 +57,7 @@ namespace DVG.Core
                 {
                     item.Tick();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     ExceptionHandler?.Invoke(e);
                 }
@@ -72,7 +72,7 @@ namespace DVG.Core
                 {
                     item.FixedTick();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     ExceptionHandler?.Invoke(e);
                 }

@@ -2,7 +2,7 @@
 
 namespace DVG.Core
 {
-    public interface IPlayerLoopSystem: IDisposable
+    public interface IPlayerLoopSystem : IDisposable
     {
         public void Add(IPlayerLoopItem item);
         public void Remove(IPlayerLoopItem item);
