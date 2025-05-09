@@ -4,6 +4,7 @@ namespace DVG.Core
 {
     public interface IPlayerLoopSystem : IDisposable
     {
+        public event Action<Exception> ExceptionHandler;
         public void Add(IPlayerLoopItem item);
         public void Remove(IPlayerLoopItem item);
 
