@@ -7,10 +7,10 @@ namespace DVG.Core
         public V View { get; set; }
         public M Model { get; set; }
 
-        public Presenter(V view, M model)
+        public Presenter(V? view, M? model)
         {
-            View = view;
-            Model = model;
+            View = view!;
+            Model = model!;
         }
     }
 }
