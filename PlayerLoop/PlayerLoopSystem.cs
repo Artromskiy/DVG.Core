@@ -49,13 +49,13 @@ namespace DVG.Core
             _startables.Clear();
         }
 
-        public void Tick()
+        public void Tick(float deltaTime)
         {
             foreach (var item in _tickables)
             {
                 try
                 {
-                    item.Tick();
+                    item.Tick(deltaTime);
                 }
                 catch (Exception e)
                 {
@@ -64,7 +64,7 @@ namespace DVG.Core
             }
         }
 
-        public void FixedTick()
+        public void FixedTick(float deltaTime)
         {
             foreach (var item in _fixedTickables)
             {
