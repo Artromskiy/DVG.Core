@@ -4,8 +4,9 @@ namespace DVG.Core
 {
     public interface ICommand: IComparable<ICommand>
     {
-        public int CommandId { get; } // what
-        public int CallerId { get; } // who
-        public TimeSpan TimeStamp { get; } // when
+        public int EntityId { get; } // reciever id
+        public int CommandId { get; } // argument type id
+        public int ClientId { get; } // who
+        public int Tick { get; } // when
     }
 }
