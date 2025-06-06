@@ -5,6 +5,6 @@
     {
         public int Tick { get; }
         public int EntityId { get; }
-        public T MementoData { get; }
+        public T Data { get; }
     }
 }

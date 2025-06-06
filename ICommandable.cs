@@ -1,8 +1,8 @@
 ﻿namespace DVG.Core
 {
     public interface ICommandable<T>
-        where T: unmanaged, ICommandData
+        where T: ICommandData
     {
-        void Recieve(T cmd);
+        void Execute(T cmd);
     }
 }

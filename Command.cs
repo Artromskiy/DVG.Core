@@ -3,7 +3,7 @@
 namespace DVG.Core
 {
     public readonly struct Command<C> : ICommand, IComparable<Command<C>>
-        where C : unmanaged, ICommandData
+        where C : ICommandData
     {
         public int EntityId { get; }
         public int ClientId { get; }
