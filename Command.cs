@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace DVG.Core
 {
+    [DataContract]
     public readonly struct Command<C> : ICommand, IComparable<Command<C>>
         where C : ICommandData
     {
+        [DataMember(Order = 0)]
         public int EntityId { get; }
+        [DataMember(Order = 1)]
         public int ClientId { get; }
+        [DataMember(Order = 2)]
         public int Tick { get; }
+        [DataMember(Order = 3)]
         public C Data { get; }
 
         public Command(int entityId, int callerId, int tick, C data)
