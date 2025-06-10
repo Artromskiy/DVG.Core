@@ -4,8 +4,8 @@ using System.Runtime.Serialization;
 namespace DVG.Core
 {
     [DataContract]
-    public readonly struct Command<C> : ICommand, IComparable<Command<C>>
-        where C : ICommandData
+    public readonly struct Command<D> : ICommand, IComparable<Command<D>>
+        where D : ICommandData
     {
         [DataMember(Order = 0)]
         public int EntityId { get; }
@@ -14,9 +14,12 @@ namespace DVG.Core
         [DataMember(Order = 2)]
         public int Tick { get; }
         [DataMember(Order = 3)]
-        public C Data { get; }
+        public D Data { get; }
 
-        public Command(int entityId, int callerId, int tick, C data)
+        [IgnoreDataMember]
+        public readonly int CommandId => Data.CommandId;
+
+        public Command(int entityId, int callerId, int tick, D data)
         {
             EntityId = entityId;
             ClientId = callerId;
@@ -24,7 +27,7 @@ namespace DVG.Core
             Data = data;
         }
 
-        public Command(int callerId, int tick, C data)
+        public Command(int callerId, int tick, D data)
         {
             EntityId = 0;
             ClientId = callerId;
@@ -32,18 +35,9 @@ namespace DVG.Core
             Data = data;
         }
 
-        public readonly int CommandId => Data.CommandId;
-        readonly int IComparable<Command<C>>.CompareTo(Command<C> other) => Tick.CompareTo(other);
+        readonly int IComparable<Command<D>>.CompareTo(Command<D> other) => Tick.CompareTo(other);
         readonly int IComparable<ICommand>.CompareTo(ICommand other) => Tick.CompareTo(other.Tick);
-
-        public readonly Command<C> WithEntityId(int entityId)
-        {
-            return new Command<C>(entityId, ClientId, Tick, Data);
-        }
-
-        public readonly Command<C> WithClientId(int callerId)
-        {
-            return new Command<C>(EntityId, callerId, Tick, Data);
-        }
+        public readonly Command<D> WithEntityId(int entityId) => new Command<D>(entityId, ClientId, Tick, Data);
+        public readonly Command<D> WithClientId(int callerId) => new Command<D>(EntityId, callerId, Tick, Data);
     }
 }
