@@ -38,14 +38,14 @@ namespace DVG.Core
 
         public void Clear() => _lists.Clear();
 
-        public List<T> GetCollection<T>()
+        public List<T>? GetCollection<T>()
         {
             var key = typeof(T);
             if (!_lists.TryGetValue(key, out var list))
-                _lists.Add(key, list = new List<T>());
+                return null;
 
             if (!(list is List<T> genericList))
-                return null!;
+                return null;
 
             return genericList;
         }
