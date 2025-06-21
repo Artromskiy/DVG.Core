@@ -38,6 +38,6 @@ namespace DVG.Core
         readonly int IComparable<Command<D>>.CompareTo(Command<D> other) => Tick.CompareTo(other);
         readonly int IComparable<ICommand>.CompareTo(ICommand other) => Tick.CompareTo(other.Tick);
         public readonly Command<D> WithEntityId(int entityId) => new Command<D>(entityId, ClientId, Tick, Data);
-        public readonly Command<D> WithClientId(int callerId) => new Command<D>(EntityId, callerId, Tick, Data);
+        public readonly Command<D> WithClientId(int clientId) => new Command<D>(EntityId, clientId, Tick, Data);
     }
 }
