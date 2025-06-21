@@ -38,6 +38,31 @@ namespace DVG.Core
 
         public void Clear() => _lists.Clear();
 
+        public void Clear<T>()
+        {
+            var key = typeof(T);
+            if (!_lists.TryGetValue(key, out var list))
+                return;
+
+            if (!(list is List<T> genericList))
+                return;
+
+            _lists.Clear();
+            _lists.Remove(key);
+        }
+
+        public void Trim<T>()
+        {
+            var key = typeof(T);
+            if (!_lists.TryGetValue(key, out var list))
+                return;
+
+            if (!(list is List<T> genericList))
+                return;
+
+            genericList.TrimExcess();
+        }
+
         public List<T>? GetCollection<T>()
         {
             var key = typeof(T);
