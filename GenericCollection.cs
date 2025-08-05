@@ -47,7 +47,7 @@ namespace DVG.Core
             if (!(list is List<T> genericList))
                 return;
 
-            _lists.Clear();
+            genericList.Clear();
             _lists.Remove(key);
         }
 
