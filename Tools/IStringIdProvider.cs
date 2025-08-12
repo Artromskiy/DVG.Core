@@ -7,14 +7,14 @@ namespace DVG.Core.Tools
     public interface IStringIdProvider
     {
         public Type IdType { get; }
-        public IEnumerable<IStringId> Ids { get; }
+        public IEnumerable<IId> Ids { get; }
     }
 
     public interface IStringIdProvider<Id> : IStringIdProvider
-        where Id : IStringId
+        where Id : IId
     {
         public IEnumerable<Id> TypedIds { get; }
         Type IStringIdProvider.IdType => typeof(Id);
-        IEnumerable<IStringId> IStringIdProvider.Ids => TypedIds.OfType<IStringId>();
+        IEnumerable<IId> IStringIdProvider.Ids => TypedIds.OfType<IId>();
     }
 }

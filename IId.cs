@@ -1,6 +1,6 @@
 namespace DVG.Core
 {
-    public interface IStringId
+    public interface IId
     {
         public string Value { get; }
         public bool IsNone { get; }

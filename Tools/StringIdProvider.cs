@@ -4,7 +4,7 @@ namespace DVG.Core.Tools
 {
     public abstract class StringIdProvider<T, V> : IStringIdProvider<V>
         where T : StringIdProvider<T, V>, new()
-        where V : IStringId
+        where V : IId
 
     {
         public static T Instance => new();

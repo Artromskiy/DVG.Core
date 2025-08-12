@@ -3,10 +3,10 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace DVG.Core.StringIds.Utilities
+namespace DVG.Core.Ids.Utilities
 {
     public abstract class IdTypeConverter<TId> : TypeConverter
-        where TId : struct, IStringId
+        where TId : struct, IId
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
@@ -33,7 +33,7 @@ namespace DVG.Core.StringIds.Utilities
     }
 
     public abstract class IdJsonConverter<TId> : JsonConverter
-        where TId : struct, IStringId
+        where TId : struct, IId
     {
         public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
