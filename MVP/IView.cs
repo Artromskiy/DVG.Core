@@ -2,8 +2,9 @@
 {
     public interface IView { }
     public interface IView<VM>
-        where VM: IViewModel
+        where VM : IViewModel
     {
-        void Inject(VM viewModel);
+        [Inject]
+        VM ViewModel { get; set; }
     }
 }
