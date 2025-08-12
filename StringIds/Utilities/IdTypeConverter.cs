@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace DVG.Core.Ids.Utilities
+namespace DVG.Core.StringIds.Utilities
 {
     public abstract class IdTypeConverter<TId> : TypeConverter
         where TId : struct, IStringId

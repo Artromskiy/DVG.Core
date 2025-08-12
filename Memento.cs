@@ -3,8 +3,8 @@
     public readonly struct Memento<T> : IMemento
         where T : IMementoData
     {
-        public int Tick { get; }
         public int EntityId { get; }
+        public int Tick { get; }
         public T Data { get; }
 
         public Memento(int tick, int entityId, T data)
