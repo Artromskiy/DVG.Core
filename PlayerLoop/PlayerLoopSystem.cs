@@ -64,13 +64,13 @@ namespace DVG.Core
             }
         }
 
-        public void FixedTick(float deltaTime)
+        public void FixedTick(fix deltaTime)
         {
             foreach (var item in _fixedTickables)
             {
                 try
                 {
-                    item.FixedTick();
+                    item.Tick(deltaTime);
                 }
                 catch (Exception e)
                 {

@@ -2,6 +2,6 @@
 {
     public interface ITickable : IPlayerLoopItem
     {
-        public void Tick(float deltaTime);
+        void Tick(float deltaTime);
     }
 }

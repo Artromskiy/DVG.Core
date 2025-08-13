@@ -2,6 +2,6 @@
 {
     public interface IFixedTickable : IPlayerLoopItem
     {
-        public void FixedTick();
+        void Tick(fix deltaTime);
     }
 }

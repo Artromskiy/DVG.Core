@@ -10,6 +10,6 @@ namespace DVG.Core
             
         public void Start();
         public void Tick(float deltaTime);
-        public void FixedTick(float deltaTime);
+        public void FixedTick(fix deltaTime);
     }
 }
