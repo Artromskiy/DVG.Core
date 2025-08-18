@@ -4,17 +4,17 @@ using System.Runtime.Serialization;
 namespace DVG.Core
 {
     [DataContract]
-    public readonly struct Command<D> : ICommand, IComparable<Command<D>>
+    public struct Command<D> : ICommand, IComparable<Command<D>>
         where D : ICommandData
     {
         [DataMember(Order = 0)]
-        public int EntityId { get; }
+        public int EntityId { get; set; }
         [DataMember(Order = 1)]
-        public int ClientId { get; }
+        public int ClientId { get; set; }
         [DataMember(Order = 2)]
-        public int Tick { get; }
+        public int Tick { get; set; }
         [DataMember(Order = 3)]
-        public D Data { get; }
+        public D Data { get; set; }
 
         [IgnoreDataMember]
         public readonly int CommandId => Data.CommandId;
@@ -22,14 +22,6 @@ namespace DVG.Core
         public Command(int entityId, int callerId, int tick, D data)
         {
             EntityId = entityId;
-            ClientId = callerId;
-            Tick = tick;
-            Data = data;
-        }
-
-        public Command(int callerId, int tick, D data)
-        {
-            EntityId = 0;
             ClientId = callerId;
             Tick = tick;
             Data = data;
