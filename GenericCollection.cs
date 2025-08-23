@@ -48,7 +48,6 @@ namespace DVG.Core
                 return;
 
             genericList.Clear();
-            _lists.Remove(key);
         }
 
         public void Trim<T>()

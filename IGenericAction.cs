@@ -9,4 +9,9 @@
     {
         void Invoke<T>();
     }
+
+    public interface IStructGenericAction
+    {
+        void Invoke<T>() where T: struct;
+    }
 }
