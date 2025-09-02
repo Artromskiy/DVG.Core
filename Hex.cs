@@ -8,10 +8,10 @@
         private static readonly fix _outerRadius = fix.One / 2;
         private static readonly fix _innerRadius = _outerRadius * _sqrtThreeOverTwo;
 
-        private static readonly fix _sqrtThreeOverThree = _sqrtThree / 3;
         private static readonly fix _oneAndHalf = fix.One + fix.One / 2;
-        private static readonly fix _twoOverThree = (fix)2 / 3;
-        private static readonly fix _minusOneOverThree = -fix.One / 3;
+        private static readonly fix _twoOverThreeOverOuterRadius = (fix)2 / 3 / _outerRadius;
+        private static readonly fix _threeOuterRadius = _outerRadius * 3;
+        private static readonly fix _oneAndHalfOuterRadius = _outerRadius * _oneAndHalf;
         private static int2 AxialRound(fix q, fix r)
         {
             fix x = q;
@@ -38,8 +38,8 @@
 
         public static int2 WorldToAxial(fix2 pos)
         {
-            fix q = (_twoOverThree * pos.x) / _outerRadius;
-            fix r = (_minusOneOverThree * pos.x + _sqrtThreeOverThree * pos.y) / _outerRadius;
+            fix q = pos.x * _twoOverThreeOverOuterRadius;
+            fix r = (_sqrtThree * pos.y - pos.x) / _threeOuterRadius;
             return AxialRound(q, r);
         }
 
@@ -48,8 +48,8 @@
             int q = axial.x;
             int r = axial.y;
 
-            fix x = _outerRadius * _oneAndHalf * q;
-            fix y = _innerRadius * (2 * r + q);
+            fix x = _oneAndHalfOuterRadius * q;
+            fix y = _innerRadius * (r + r + q);
             return new fix2(x, y);
         }
 
