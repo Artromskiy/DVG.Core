@@ -4,7 +4,7 @@
     {
         private const int _depth = 10;
 
-        public static fix2 SolveSphereMove((fix2 s, fix2 e, fix2 n)[] segments, fix2 from, fix2 to, fix radius)
+        public static fix2 SolveCircleMove((fix2 s, fix2 e, fix2 n)[] segments, fix2 from, fix2 to, fix radius)
         {
             var castFrom = from;
             var endPoint = to;
@@ -13,14 +13,14 @@
             fix2 oldSolve = endPoint;
             while (depth > 0)
             {
-                if (!SphereCast(segments, castFrom, endPoint, radius, out var res))
+                if (!CircleCast(segments, castFrom, endPoint, radius, out var res))
                 {
                     break;
                 }
 
                 var newCastFrom = res.intersection + res.normal * skin;
 
-                if (SphereCast(segments, from, newCastFrom, radius, out _))
+                if (CircleCast(segments, from, newCastFrom, radius, out _))
                 {
                     endPoint = castFrom;
                     break;
@@ -53,7 +53,7 @@
         }
 
 
-        public static bool SphereCast((fix2 s, fix2 e, fix2 n)[] lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
+        public static bool CircleCast((fix2 s, fix2 e, fix2 n)[] lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
         {
             fix minSqrDistance = fix.MaxValue;
             result = default;
