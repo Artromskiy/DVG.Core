@@ -12,6 +12,10 @@
         private static readonly fix _twoOverThreeOverOuterRadius = (fix)2 / 3 / _outerRadius;
         private static readonly fix _threeOuterRadius = _outerRadius * 3;
         private static readonly fix _oneAndHalfOuterRadius = _outerRadius * _oneAndHalf;
+
+        private static readonly fix _threeOverFourOuterRadius = _outerRadius * 3 / 4;
+        private static readonly fix _halfInnerRadius = _innerRadius / 2;
+
         private static int2 AxialRound(fix q, fix r)
         {
             fix x = q;
@@ -67,6 +71,33 @@
             var col = axial.x;
             var row = axial.y + (axial.x - parity) / 2;
             return new int2(col, row);
+        }
+
+
+        public static fix2[] GetHexPoints()
+        {
+            return new fix2[]
+            {
+                new fix2(_outerRadius / 2, _innerRadius),
+                new fix2(_outerRadius, 0),
+                new fix2(_outerRadius / 2, -_innerRadius),
+                new fix2(-_outerRadius / 2, -_innerRadius),
+                new fix2(-_outerRadius, 0),
+                new fix2(-_outerRadius / 2, _innerRadius),
+            };
+        }
+
+        public static fix2[] GetHexNormals()
+        {
+            return new fix2[]
+            {
+                fix2.Normalize(new fix2(_threeOverFourOuterRadius, _halfInnerRadius)),
+                fix2.Normalize(new fix2(_threeOverFourOuterRadius, -_halfInnerRadius)),
+                fix2.Normalize(new fix2(0, -_innerRadius)),
+                fix2.Normalize(new fix2(-_threeOverFourOuterRadius, -_halfInnerRadius)),
+                fix2.Normalize(new fix2(-_threeOverFourOuterRadius, _halfInnerRadius)),
+                fix2.Normalize(new fix2(0, _innerRadius)),
+            };
         }
     }
 }
