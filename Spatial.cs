@@ -1,8 +1,58 @@
-﻿namespace DVG.Core
+﻿using System.Collections.Generic;
+
+namespace DVG.Core
 {
     public static class Spatial
     {
         private const int _depth = 10;
+
+        public static fix2 SolveCircleMove(List<(fix2 s, fix2 e, fix2 n)> segments, fix2 from, fix2 to, fix radius)
+        {
+            var castFrom = from;
+            var endPoint = to;
+            fix skin = new fix(512);
+            int depth = _depth;
+            fix2 oldSolve = endPoint;
+            while (depth > 0)
+            {
+                if (!CircleCast(segments, castFrom, endPoint, radius, out var res))
+                {
+                    break;
+                }
+
+                var newCastFrom = res.intersection + res.normal * skin;
+
+                if (CircleCast(segments, from, newCastFrom, radius, out _))
+                {
+                    endPoint = castFrom;
+                    break;
+                }
+
+                if (fix2.SqrDistance(castFrom, newCastFrom) == 0 ||
+                    fix2.SqrDistance(from, castFrom) >= fix2.SqrDistance(from, newCastFrom))
+                {
+                    endPoint = castFrom;
+                    break;
+                }
+
+                fix2 tangent = res.normal.yx;
+                tangent.x = -tangent.x;
+                castFrom = newCastFrom;
+                endPoint = Projection(endPoint, castFrom, castFrom + tangent);
+
+                if (fix2.SqrDistance(oldSolve, endPoint) == 0 ||
+                    fix2.SqrDistance(oldSolve, from) >= fix2.SqrDistance(endPoint, from))
+                {
+                    endPoint = castFrom;
+                    break;
+                }
+
+                oldSolve = endPoint;
+
+                depth--;
+            }
+            return endPoint;
+        }
 
         public static fix2 SolveCircleMove((fix2 s, fix2 e, fix2 n)[] segments, fix2 from, fix2 to, fix radius)
         {
@@ -59,6 +109,27 @@
             result = default;
             bool found = false;
             for (int i = 0; i < lines.Length; i++)
+            {
+                if (!CircleIntersection(lines[i], from, to, radius, out var res))
+                    continue;
+
+                var sqrDistance = fix2.SqrDistance(from, res.intersection);
+                if (sqrDistance > minSqrDistance)
+                    continue;
+
+                result = res;
+                minSqrDistance = sqrDistance;
+                found = true;
+            }
+            return found;
+        }
+
+        public static bool CircleCast(List<(fix2 s, fix2 e, fix2 n)> lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
+        {
+            fix minSqrDistance = fix.MaxValue;
+            result = default;
+            bool found = false;
+            for (int i = 0; i < lines.Count; i++)
             {
                 if (!CircleIntersection(lines[i], from, to, radius, out var res))
                     continue;
