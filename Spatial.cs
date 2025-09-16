@@ -1,26 +1,27 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace DVG.Core
 {
     public static class Spatial
     {
         private const int _depth = 10;
+        private static readonly fix _skin = new fix(1024);
 
         public static fix2 SolveCircleMove(List<(fix2 s, fix2 e, fix2 n)> segments, fix2 from, fix2 to, fix radius)
         {
             var castFrom = from;
             var endPoint = to;
-            fix skin = new fix(512);
             int depth = _depth;
-            fix2 oldSolve = endPoint;
             while (depth > 0)
             {
-                if (!CircleCast(segments, castFrom, endPoint, radius, out var res))
+                if (!CircleCast(segments, castFrom, endPoint, radius, out var res) &&
+                    !CircleCast(segments, from, endPoint, radius, out _))
                 {
                     break;
                 }
 
-                var newCastFrom = res.intersection + res.normal * skin;
+                var newCastFrom = res.intersection + res.normal * _skin;
 
                 if (CircleCast(segments, from, newCastFrom, radius, out _))
                 {
@@ -28,26 +29,16 @@ namespace DVG.Core
                     break;
                 }
 
-                if (fix2.SqrDistance(castFrom, newCastFrom) == 0 ||
-                    fix2.SqrDistance(from, castFrom) >= fix2.SqrDistance(from, newCastFrom))
+                if (fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
                 {
                     endPoint = castFrom;
                     break;
                 }
 
+                castFrom = newCastFrom;
                 fix2 tangent = res.normal.yx;
                 tangent.x = -tangent.x;
-                castFrom = newCastFrom;
                 endPoint = Projection(endPoint, castFrom, castFrom + tangent);
-
-                if (fix2.SqrDistance(oldSolve, endPoint) == 0 ||
-                    fix2.SqrDistance(oldSolve, from) >= fix2.SqrDistance(endPoint, from))
-                {
-                    endPoint = castFrom;
-                    break;
-                }
-
-                oldSolve = endPoint;
 
                 depth--;
             }
@@ -58,17 +49,16 @@ namespace DVG.Core
         {
             var castFrom = from;
             var endPoint = to;
-            fix skin = new fix(512);
             int depth = _depth;
-            fix2 oldSolve = endPoint;
             while (depth > 0)
             {
-                if (!CircleCast(segments, castFrom, endPoint, radius, out var res))
+                if (!CircleCast(segments, castFrom, endPoint, radius, out var res) &&
+                    !CircleCast(segments, from, endPoint, radius, out _))
                 {
                     break;
                 }
 
-                var newCastFrom = res.intersection + res.normal * skin;
+                var newCastFrom = res.intersection + res.normal * _skin;
 
                 if (CircleCast(segments, from, newCastFrom, radius, out _))
                 {
@@ -76,26 +66,16 @@ namespace DVG.Core
                     break;
                 }
 
-                if (fix2.SqrDistance(castFrom, newCastFrom) == 0 ||
-                    fix2.SqrDistance(from, castFrom) >= fix2.SqrDistance(from, newCastFrom))
+                if (fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
                 {
                     endPoint = castFrom;
                     break;
                 }
 
+                castFrom = newCastFrom;
                 fix2 tangent = res.normal.yx;
                 tangent.x = -tangent.x;
-                castFrom = newCastFrom;
                 endPoint = Projection(endPoint, castFrom, castFrom + tangent);
-
-                if (fix2.SqrDistance(oldSolve, endPoint) == 0 ||
-                    fix2.SqrDistance(oldSolve, from) >= fix2.SqrDistance(endPoint, from))
-                {
-                    endPoint = castFrom;
-                    break;
-                }
-
-                oldSolve = endPoint;
 
                 depth--;
             }
@@ -161,7 +141,7 @@ namespace DVG.Core
             var sqrRadius = radius * radius;
             var sqrDistanceEdgeS = fix2.SqrDistance(projS, segment.s);
             var sqrDistanceEdgeE = fix2.SqrDistance(projE, segment.e);
-            if (sqrDistanceEdgeS <= sqrRadius || sqrDistanceEdgeE <= sqrRadius)
+            if (sqrDistanceEdgeS < sqrRadius || sqrDistanceEdgeE < sqrRadius)
             {
                 var center = sqrDistanceEdgeS <= sqrDistanceEdgeE ? segment.s : segment.e;
                 var (i1, i2) = CircleLineIntersections(from, to, center, radius);
@@ -186,6 +166,10 @@ namespace DVG.Core
             var D = Maths.Sqrt(b * b - 4 * a * c);
             var d1 = -b + D;
             var d2 = -b - D;
+            if (d1 == d2 && d2 == 0)
+            {
+                d1 = d2 = 1;
+            }
             var c2 = 2 * c;
             var t1 = c2 / (d1 == 0 ? d2 : d1);
             var t2 = c2 / (d2 == 0 ? d1 : d2);
@@ -196,19 +180,21 @@ namespace DVG.Core
 
         public static bool Intersects(fix2 a, fix2 b, fix2 c, fix2 d, out fix2 intersection)
         {
-            fix oa = orient(c, d, a),
-                ob = orient(c, d, b),
-                oc = orient(a, b, c),
-                od = orient(a, b, d);
+            fix d1 = orient(c, d, a),
+                d2 = orient(c, d, b),
+                d3 = orient(a, b, c),
+                d4 = orient(a, b, d);
             intersection = fix2.zero;
-            if (oa * ob < 0 && oc * od < 0)
+            if (d1 * d2 < 0 && d3 * d4 < 0)
             {
-                intersection = (a * ob - b * oa) / (ob - oa);
+                intersection = (a * d2 - b * d1) / (d2 - d1);
                 return true;
             }
             return false;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static fix cross(fix2 a, fix2 b) => a.x * b.y - a.y * b.x;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static fix orient(fix2 a, fix2 b, fix2 c) => cross(b - a, c - a);
         }
 

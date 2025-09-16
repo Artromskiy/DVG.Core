@@ -1,4 +1,6 @@
-﻿namespace DVG.Core
+﻿using System;
+
+namespace DVG.Core
 {
     public static class Hex
     {
@@ -15,6 +17,40 @@
 
         private static readonly fix _threeOverFourOuterRadius = _outerRadius * 3 / 4;
         private static readonly fix _halfInnerRadius = _innerRadius / 2;
+
+        private static readonly fix2[] _hexPoints = new fix2[]
+        {
+            new fix2(_outerRadius / 2, _innerRadius),
+            new fix2(_outerRadius, 0),
+            new fix2(_outerRadius / 2, -_innerRadius),
+            new fix2(-_outerRadius / 2, -_innerRadius),
+            new fix2(-_outerRadius, 0),
+            new fix2(-_outerRadius / 2, _innerRadius),
+        };
+
+        private static fix2[] _hexNormals = new fix2[]
+        {
+            fix2.Normalize(new fix2(_threeOverFourOuterRadius, _halfInnerRadius)),
+            fix2.Normalize(new fix2(_threeOverFourOuterRadius, -_halfInnerRadius)),
+            fix2.Normalize(new fix2(0, -_innerRadius)),
+            fix2.Normalize(new fix2(-_threeOverFourOuterRadius, -_halfInnerRadius)),
+            fix2.Normalize(new fix2(-_threeOverFourOuterRadius, _halfInnerRadius)),
+            fix2.Normalize(new fix2(0, _innerRadius)),
+        };
+
+        private static readonly int2[] _axialNear = new int2[]
+        {
+            new int2(0, -1),
+            new int2(1, -1),
+            new int2(1, 0),
+            new int2(0, 1),
+            new int2(1, 1),
+            new int2(-1, 0),
+        };
+
+        public static ReadOnlySpan<fix2> HexPoints => _hexPoints;
+        public static ReadOnlySpan<fix2> HexNormals => _hexNormals;
+        public static ReadOnlySpan<int2> AxialNear => _axialNear;
 
         private static int2 AxialRound(fix q, fix r)
         {
@@ -73,31 +109,5 @@
             return new int2(col, row);
         }
 
-
-        public static fix2[] GetHexPoints()
-        {
-            return new fix2[]
-            {
-                new fix2(_outerRadius / 2, _innerRadius),
-                new fix2(_outerRadius, 0),
-                new fix2(_outerRadius / 2, -_innerRadius),
-                new fix2(-_outerRadius / 2, -_innerRadius),
-                new fix2(-_outerRadius, 0),
-                new fix2(-_outerRadius / 2, _innerRadius),
-            };
-        }
-
-        public static fix2[] GetHexNormals()
-        {
-            return new fix2[]
-            {
-                fix2.Normalize(new fix2(_threeOverFourOuterRadius, _halfInnerRadius)),
-                fix2.Normalize(new fix2(_threeOverFourOuterRadius, -_halfInnerRadius)),
-                fix2.Normalize(new fix2(0, -_innerRadius)),
-                fix2.Normalize(new fix2(-_threeOverFourOuterRadius, -_halfInnerRadius)),
-                fix2.Normalize(new fix2(-_threeOverFourOuterRadius, _halfInnerRadius)),
-                fix2.Normalize(new fix2(0, _innerRadius)),
-            };
-        }
     }
 }
