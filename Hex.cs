@@ -7,7 +7,7 @@ namespace DVG.Core
         private static readonly fix _sqrtThree = Maths.Sqrt((fix)3);
         private static readonly fix _sqrtThreeOverTwo = _sqrtThree / 2;
 
-        private static readonly fix _outerRadius = fix.One / 2;
+        private static readonly fix _outerRadius = fix.One;
         private static readonly fix _innerRadius = _outerRadius * _sqrtThreeOverTwo;
 
         private static readonly fix _oneAndHalf = fix.One + fix.One / 2;
