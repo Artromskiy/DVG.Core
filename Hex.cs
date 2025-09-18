@@ -40,12 +40,12 @@ namespace DVG.Core
 
         private static readonly int2[] _axialNear = new int2[]
         {
-            new int2(0, -1),
-            new int2(1, -1),
-            new int2(1, 0),
             new int2(0, 1),
-            new int2(1, 1),
+            new int2(1, 0),
+            new int2(1, -1),
+            new int2(0, -1),
             new int2(-1, 0),
+            new int2(-1, 1),
         };
 
         public static ReadOnlySpan<fix2> HexPoints => _hexPoints;
