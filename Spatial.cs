@@ -8,6 +8,48 @@ namespace DVG.Core
         private const int _depth = 10;
         private static readonly fix _skin = new fix(1024);
 
+        public static fix2 Solve(List<(fix2 s, fix2 e, fix2 n)> segments, fix2 from, fix2 to)
+        {
+            var castFrom = from;
+            var endPoint = to;
+            int depth = _depth;
+            while (depth > 0)
+            {
+                if (!RayCast(segments, castFrom, endPoint, out var res) &&
+                    !RayCast(segments, from, endPoint, out _))
+                {
+                    break;
+                }
+
+                var newCastFrom = res.intersection + res.normal * _skin;
+
+                if (RayCast(segments, from, newCastFrom, out _))
+                {
+                    endPoint = castFrom;
+                    break;
+                }
+
+                if (fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
+                {
+                    endPoint = castFrom;
+                    break;
+                }
+
+                castFrom = newCastFrom;
+                fix2 tangent = res.normal.yx;
+                tangent.x = -tangent.x;
+                endPoint = Projection(endPoint, castFrom, castFrom + tangent);
+
+                depth--;
+            }
+
+            if (depth == 0)
+            {
+                return from;
+            }
+            return endPoint;
+        }
+
         public static fix2 SolveCircleMove(List<(fix2 s, fix2 e, fix2 n)> segments, fix2 from, fix2 to, fix radius)
         {
             var castFrom = from;
@@ -41,6 +83,11 @@ namespace DVG.Core
                 endPoint = Projection(endPoint, castFrom, castFrom + tangent);
 
                 depth--;
+            }
+
+            if (depth == 0)
+            {
+                return from;
             }
             return endPoint;
         }
@@ -79,6 +126,11 @@ namespace DVG.Core
 
                 depth--;
             }
+
+            if (depth == 0)
+            {
+                return from;
+            }
             return endPoint;
         }
 
@@ -91,6 +143,27 @@ namespace DVG.Core
             for (int i = 0; i < lines.Length; i++)
             {
                 if (!CircleIntersection(lines[i], from, to, radius, out var res))
+                    continue;
+
+                var sqrDistance = fix2.SqrDistance(from, res.intersection);
+                if (sqrDistance > minSqrDistance)
+                    continue;
+
+                result = res;
+                minSqrDistance = sqrDistance;
+                found = true;
+            }
+            return found;
+        }
+
+        public static bool RayCast(List<(fix2 s, fix2 e, fix2 n)> lines, fix2 from, fix2 to, out (fix2 intersection, fix2 normal) result)
+        {
+            fix minSqrDistance = fix.MaxValue;
+            result = default;
+            bool found = false;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (!LineIntersection(lines[i], from, to, out var res))
                     continue;
 
                 var sqrDistance = fix2.SqrDistance(from, res.intersection);
@@ -125,6 +198,16 @@ namespace DVG.Core
             return found;
         }
 
+        public static bool LineIntersection((fix2 s, fix2 e, fix2 n) segment, fix2 from, fix2 to, out (fix2 intersection, fix2 normal) result)
+        {
+            result = default;
+            if (Intersects(segment.s, segment.e, from, to, out var intersection))
+            {
+                result = (intersection, segment.n);
+                return true;
+            }
+            return false;
+        }
         public static bool CircleIntersection((fix2 s, fix2 e, fix2 n) segment, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
         {
             var offset1 = segment.n * radius;

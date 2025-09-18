@@ -18,7 +18,7 @@ namespace DVG.Core
         private static readonly fix _threeOverFourOuterRadius = _outerRadius * 3 / 4;
         private static readonly fix _halfInnerRadius = _innerRadius / 2;
 
-        private static readonly fix2[] _hexPoints = new fix2[]
+        private static readonly fix2[] _points = new fix2[]
         {
             new fix2(_outerRadius / 2, _innerRadius),
             new fix2(_outerRadius, 0),
@@ -28,7 +28,7 @@ namespace DVG.Core
             new fix2(-_outerRadius / 2, _innerRadius),
         };
 
-        private static fix2[] _hexNormals = new fix2[]
+        private static fix2[] _normals = new fix2[]
         {
             fix2.Normalize(new fix2(_threeOverFourOuterRadius, _halfInnerRadius)),
             fix2.Normalize(new fix2(_threeOverFourOuterRadius, -_halfInnerRadius)),
@@ -48,8 +48,8 @@ namespace DVG.Core
             new int2(-1, 1),
         };
 
-        public static ReadOnlySpan<fix2> HexPoints => _hexPoints;
-        public static ReadOnlySpan<fix2> HexNormals => _hexNormals;
+        public static ReadOnlySpan<fix2> Points => _points;
+        public static ReadOnlySpan<fix2> Normals => _normals;
         public static ReadOnlySpan<int2> AxialNear => _axialNear;
 
         private static int2 AxialRound(fix q, fix r)
