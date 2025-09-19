@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace DVG.Core
 {
-    public class CommandCollection
+    public sealed class CommandCollection
     {
-        public Dictionary<Type, IDictionary> _lists = new Dictionary<Type, IDictionary>();
+        private readonly Dictionary<Type, IDictionary> _lists = new Dictionary<Type, IDictionary>();
 
         public void Add<T>(Command<T> value)
             where T : ICommandData
@@ -77,7 +77,7 @@ namespace DVG.Core
             return generic.Values;
         }
 
-        private class ClientCommands<T> : SortedDictionary<int, Command<T>>
+        private sealed class ClientCommands<T> : SortedDictionary<int, Command<T>>
             where T : ICommandData
         { }
     }
