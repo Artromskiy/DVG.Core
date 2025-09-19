@@ -71,7 +71,7 @@ namespace DVG.Core
                     break;
                 }
 
-                if (fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
+                if (depth != _depth && fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
                 {
                     endPoint = castFrom;
                     break;
@@ -113,7 +113,7 @@ namespace DVG.Core
                     break;
                 }
 
-                if (fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
+                if (depth != _depth && fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
                 {
                     endPoint = castFrom;
                     break;
