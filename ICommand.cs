@@ -2,7 +2,7 @@
 
 namespace DVG.Core
 {
-    public interface ICommand: IComparable<ICommand>
+    public interface ICommand : IComparable<ICommand>
     {
         public int EntityId { get; } // reciever id
         public int CommandId { get; } // generic argument type id

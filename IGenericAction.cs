@@ -12,6 +12,6 @@
 
     public interface IStructGenericAction
     {
-        void Invoke<T>() where T: struct;
+        void Invoke<T>() where T : struct;
     }
 }

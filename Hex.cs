@@ -28,7 +28,7 @@ namespace DVG.Core
             new fix2(-_outerRadius / 2, _innerRadius),
         };
 
-        private static fix2[] _normals = new fix2[]
+        private static readonly fix2[] _normals = new fix2[]
         {
             fix2.Normalize(new fix2(_threeOverFourOuterRadius, _halfInnerRadius)),
             fix2.Normalize(new fix2(_threeOverFourOuterRadius, -_halfInnerRadius)),
