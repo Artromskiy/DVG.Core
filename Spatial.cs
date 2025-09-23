@@ -208,6 +208,7 @@ namespace DVG.Core
             }
             return false;
         }
+
         public static bool CircleIntersection((fix2 s, fix2 e, fix2 n) segment, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
         {
             var offset1 = segment.n * radius;
@@ -263,16 +264,25 @@ namespace DVG.Core
 
         public static bool Intersects(fix2 a, fix2 b, fix2 c, fix2 d, out fix2 intersection)
         {
-            fix d1 = orient(c, d, a),
-                d2 = orient(c, d, b),
-                d3 = orient(a, b, c),
-                d4 = orient(a, b, d);
             intersection = fix2.zero;
-            if (d1 * d2 < 0 && d3 * d4 < 0)
+
+            fix d1 = orient(c, d, a);
+            fix d2 = orient(c, d, b);
+            fix d3;
+            fix d4;
+
+            if (d1 * d2 < 0)
             {
-                intersection = (a * d2 - b * d1) / (d2 - d1);
-                return true;
+                d3 = orient(a, b, c);
+                d4 = orient(a, b, d);
+
+                if (d3 * d4 < 0)
+                {
+                    intersection = (a * d2 - b * d1) / (d2 - d1);
+                    return true;
+                }
             }
+
             return false;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -295,7 +305,7 @@ namespace DVG.Core
 
             fix dot = fix2.Dot(AP, AB) / sqrLength;
 
-            return fix2.Lerp(start, end, dot);
+            return start + AB * dot;
         }
 
         public static fix2 ProjectionOnSegment(fix2 point, fix2 start, fix2 end)
@@ -313,7 +323,7 @@ namespace DVG.Core
             fix dot = fix2.Dot(AP, AB) / sqrLength;
             dot = Maths.Clamp(dot, 0, 1);
 
-            return fix2.Lerp(start, end, dot);
+            return start + AB * dot;
         }
     }
 }
