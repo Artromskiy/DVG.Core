@@ -18,8 +18,15 @@ namespace DVG.Core
 
             if (list is not ClientCommands<T> generic)
                 throw new InvalidOperationException();
-
-            generic.Add(value.ClientId, value);
+            try
+            {
+                generic.Add(value.ClientId, value);
+            }
+            catch(Exception e)
+            {
+                throw new InvalidOperationException
+                    ($"Attempt to add command of type {key.Name} for client {value.ClientId} at {value.Tick}", e);
+            }
         }
 
         public bool Remove<T>(int clientId)
@@ -49,19 +56,6 @@ namespace DVG.Core
                 throw new InvalidOperationException();
 
             generic.Clear();
-        }
-
-        public void Trim<T>()
-            where T : ICommandData
-        {
-            var key = typeof(T);
-            if (!_lists.TryGetValue(key, out var list))
-                return;
-
-            if (list is not ClientCommands<T> generic)
-                throw new InvalidOperationException();
-
-            //generic.TrimExcess();
         }
 
         public IReadOnlyCollection<Command<T>>? GetCollection<T>()
