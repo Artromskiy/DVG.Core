@@ -4,11 +4,11 @@ namespace DVG.Core
 
     public interface IFactory<T> : IFactory
     {
-        public T Create();
+        T Create();
     }
     public interface IFactory<T, P> : IFactory
     {
-        public T Create(P parameters);
+        T Create(P parameters);
     }
 
 }

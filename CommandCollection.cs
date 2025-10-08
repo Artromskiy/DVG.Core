@@ -22,7 +22,7 @@ namespace DVG.Core
             {
                 generic.Add(value.ClientId, value);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new InvalidOperationException
                     ($"Attempt to add command of type {key.Name} for client {value.ClientId} at {value.Tick}", e);

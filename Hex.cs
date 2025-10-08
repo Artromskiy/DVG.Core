@@ -20,12 +20,12 @@ namespace DVG.Core
 
         private static readonly fix2[] _points = new fix2[]
         {
-            new fix2(_outerRadius / 2, _innerRadius),
-            new fix2(_outerRadius, 0),
-            new fix2(_outerRadius / 2, -_innerRadius),
-            new fix2(-_outerRadius / 2, -_innerRadius),
-            new fix2(-_outerRadius, 0),
-            new fix2(-_outerRadius / 2, _innerRadius),
+            new(_outerRadius / 2, _innerRadius),
+            new(_outerRadius, 0),
+            new(_outerRadius / 2, -_innerRadius),
+            new(-_outerRadius / 2, -_innerRadius),
+            new(-_outerRadius, 0),
+            new(-_outerRadius / 2, _innerRadius),
         };
 
         private static readonly fix2[] _normals = new fix2[]
@@ -40,12 +40,12 @@ namespace DVG.Core
 
         private static readonly int2[] _axialNear = new int2[]
         {
-            new int2(0, 1),
-            new int2(1, 0),
-            new int2(1, -1),
-            new int2(0, -1),
-            new int2(-1, 0),
-            new int2(-1, 1),
+            new(0, 1),
+            new(1, 0),
+            new(1, -1),
+            new(0, -1),
+            new(-1, 0),
+            new(-1, 1),
         };
 
         public static ReadOnlySpan<fix2> Points => _points;
@@ -108,6 +108,5 @@ namespace DVG.Core
             var row = axial.y + (axial.x - parity) / 2;
             return new int2(col, row);
         }
-
     }
 }
