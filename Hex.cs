@@ -18,6 +18,8 @@ namespace DVG.Core
         private static readonly fix _threeOverFourOuterRadius = _outerRadius * 3 / 4;
         private static readonly fix _halfInnerRadius = _innerRadius / 2;
 
+        private static readonly fix _hexHeight = fix.One / 2;
+
         private static readonly fix2[] _points = new fix2[]
         {
             new(_outerRadius / 2, _innerRadius),
@@ -83,6 +85,15 @@ namespace DVG.Core
             return AxialRound(q, r);
         }
 
+        public static int3 WorldToAxial(fix3 pos)
+        {
+            fix q = pos.x * _twoOverThreeOverOuterRadius;
+            fix r = (_sqrtThree * pos.y - pos.x) / _threeOuterRadius;
+            var axial = AxialRound(q, r).x_y;
+            axial.y = (int)Maths.Floor(pos.y / _hexHeight);
+            return axial;
+        }
+
         public static fix2 AxialToWorld(int2 axial)
         {
             int q = axial.x;
@@ -107,6 +118,13 @@ namespace DVG.Core
             var col = axial.x;
             var row = axial.y + (axial.x - parity) / 2;
             return new int2(col, row);
+        }
+
+        public static fix3 AxialToWorld(int3 axial)
+        {
+            var pos = AxialToWorld(axial.xz).x_y;
+            pos.y = (fix)axial.y * _hexHeight;
+            return pos;
         }
     }
 }
