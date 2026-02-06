@@ -6,9 +6,9 @@ namespace DVG.Core
     {
         T Create();
     }
-    public interface IFactory<T, P> : IFactory
+    public interface IFactory<Type, Param> : IFactory
     {
-        T Create(P parameters);
+        Type Create(Param parameters);
     }
 
 }

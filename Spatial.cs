@@ -5,7 +5,7 @@ namespace DVG.Core
 {
     public static class Spatial
     {
-        private const int _depth = 10;
+        private const int _depth = 3;
         private static readonly fix _skin = new fix(1024);
 
         public static fix2 Solve(List<(fix2 s, fix2 e, fix2 n)> segments, fix2 from, fix2 to)
