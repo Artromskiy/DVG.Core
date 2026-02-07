@@ -14,4 +14,9 @@
     {
         void Invoke<T>() where T : struct;
     }
+
+    public interface IStructGenericCaller
+    {
+        void ForEach<T>(ref T action) where T : IStructGenericAction;
+    }
 }
