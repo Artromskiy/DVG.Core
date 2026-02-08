@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace DVG.Core
+namespace DVG.Core.Physics
 {
     public static class Spatial
     {
         private const int _depth = 3;
         private static readonly fix _skin = new fix(1024);
 
-        public static fix2 Solve(List<(fix2 s, fix2 e, fix2 n)> segments, fix2 from, fix2 to)
+        public static fix2 Solve(List<Segment> segments, fix2 from, fix2 to)
         {
             var castFrom = from;
             var endPoint = to;
@@ -50,7 +50,7 @@ namespace DVG.Core
             return endPoint;
         }
 
-        public static fix2 SolveCircleMove(List<(fix2 s, fix2 e, fix2 n)> segments, fix2 from, fix2 to, fix radius)
+        public static fix2 SolveCircleMove(List<Segment> segments, fix2 from, fix2 to, fix radius)
         {
             var castFrom = from;
             var endPoint = to;
@@ -92,7 +92,7 @@ namespace DVG.Core
             return endPoint;
         }
 
-        public static fix2 SolveCircleMove((fix2 s, fix2 e, fix2 n)[] segments, fix2 from, fix2 to, fix radius)
+        public static fix2 SolveCircleMove(Segment[] segments, fix2 from, fix2 to, fix radius)
         {
             var castFrom = from;
             var endPoint = to;
@@ -135,7 +135,7 @@ namespace DVG.Core
         }
 
 
-        public static bool CircleCast((fix2 s, fix2 e, fix2 n)[] lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
+        public static bool CircleCast(Segment[] lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
         {
             fix minSqrDistance = fix.MaxValue;
             result = default;
@@ -156,7 +156,7 @@ namespace DVG.Core
             return found;
         }
 
-        public static bool RayCast(List<(fix2 s, fix2 e, fix2 n)> lines, fix2 from, fix2 to, out (fix2 intersection, fix2 normal) result)
+        public static bool RayCast(List<Segment> lines, fix2 from, fix2 to, out (fix2 intersection, fix2 normal) result)
         {
             fix minSqrDistance = fix.MaxValue;
             result = default;
@@ -177,7 +177,7 @@ namespace DVG.Core
             return found;
         }
 
-        public static bool CircleCast(List<(fix2 s, fix2 e, fix2 n)> lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
+        public static bool CircleCast(List<Segment> lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
         {
             fix minSqrDistance = fix.MaxValue;
             result = default;
@@ -198,36 +198,36 @@ namespace DVG.Core
             return found;
         }
 
-        public static bool LineIntersection((fix2 s, fix2 e, fix2 n) segment, fix2 from, fix2 to, out (fix2 intersection, fix2 normal) result)
+        public static bool LineIntersection(Segment segment, fix2 from, fix2 to, out (fix2 intersection, fix2 normal) result)
         {
             result = default;
-            if (Intersects(segment.s, segment.e, from, to, out var intersection))
+            if (Intersects(segment.Start, segment.End, from, to, out var intersection))
             {
-                result = (intersection, segment.n);
+                result = (intersection, segment.Normal);
                 return true;
             }
             return false;
         }
 
-        public static bool CircleIntersection((fix2 s, fix2 e, fix2 n) segment, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
+        public static bool CircleIntersection(Segment segment, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
         {
-            var offset1 = segment.n * radius;
-            var newS = segment.s + offset1;
-            var newE = segment.e + offset1;
+            var offset1 = segment.Normal * radius;
+            var newS = segment.Start + offset1;
+            var newE = segment.End + offset1;
             result = default;
             if (Intersects(newS, newE, from, to, out var intersection))
             {
-                result = (intersection, segment.n);
+                result = (intersection, segment.Normal);
                 return true;
             }
-            var projS = ProjectionOnSegment(segment.s, from, to);
-            var projE = ProjectionOnSegment(segment.e, from, to);
+            var projS = ProjectionOnSegment(segment.Start, from, to);
+            var projE = ProjectionOnSegment(segment.End, from, to);
             var sqrRadius = radius * radius;
-            var sqrDistanceEdgeS = fix2.SqrDistance(projS, segment.s);
-            var sqrDistanceEdgeE = fix2.SqrDistance(projE, segment.e);
+            var sqrDistanceEdgeS = fix2.SqrDistance(projS, segment.Start);
+            var sqrDistanceEdgeE = fix2.SqrDistance(projE, segment.End);
             if (sqrDistanceEdgeS < sqrRadius || sqrDistanceEdgeE < sqrRadius)
             {
-                var center = sqrDistanceEdgeS <= sqrDistanceEdgeE ? segment.s : segment.e;
+                var center = sqrDistanceEdgeS <= sqrDistanceEdgeE ? segment.Start : segment.End;
                 var (i1, i2) = CircleLineIntersections(from, to, center, radius);
                 intersection = fix2.SqrDistance(i1, from) < fix2.SqrDistance(i2, from) ?
                     i1 : i2;
@@ -266,15 +266,15 @@ namespace DVG.Core
         {
             intersection = fix2.zero;
 
-            fix d1 = orient(c, d, a);
-            fix d2 = orient(c, d, b);
+            fix d1 = Orient(c, d, a);
+            fix d2 = Orient(c, d, b);
             fix d3;
             fix d4;
 
             if (d1 * d2 < 0)
             {
-                d3 = orient(a, b, c);
-                d4 = orient(a, b, d);
+                d3 = Orient(a, b, c);
+                d4 = Orient(a, b, d);
 
                 if (d3 * d4 < 0)
                 {
@@ -285,12 +285,12 @@ namespace DVG.Core
 
             return false;
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static fix cross(fix2 a, fix2 b) => a.x * b.y - a.y * b.x;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static fix orient(fix2 a, fix2 b, fix2 c) => cross(b - a, c - a);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static fix Cross(fix2 a, fix2 b) => a.x * b.y - a.y * b.x;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static fix Orient(fix2 a, fix2 b, fix2 c) => Cross(b - a, c - a);
         public static fix2 Projection(fix2 point, fix2 start, fix2 end)
         {
             if (start == end)
