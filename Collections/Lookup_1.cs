@@ -17,7 +17,7 @@ namespace DVG.Core.Collections
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity));
 
             _items = new bool[initialCapacity];
-            _offset = initialCapacity >> 1; // центрируем 0
+            _offset = initialCapacity >> 1;
         }
 
         public bool this[int id]
