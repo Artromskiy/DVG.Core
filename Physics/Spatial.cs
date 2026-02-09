@@ -63,6 +63,8 @@ namespace DVG.Core.Physics
                     break;
                 }
 
+                res.normal = fix2.Normalize(res.normal);
+
                 var newCastFrom = res.intersection + res.normal * _skin;
 
                 if (CircleCast(segments, from, newCastFrom, radius, out _))
@@ -104,6 +106,8 @@ namespace DVG.Core.Physics
                 {
                     break;
                 }
+
+                res.normal = fix2.Normalize(res.normal);
 
                 var newCastFrom = res.intersection + res.normal * _skin;
 
@@ -209,7 +213,7 @@ namespace DVG.Core.Physics
             return false;
         }
 
-        public static bool CircleIntersection(Segment segment, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
+        public static bool CircleIntersection(Segment segment, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result) // returned normal is not normalized
         {
             var offset1 = segment.Normal * radius;
             var newS = segment.Start + offset1;
@@ -231,10 +235,11 @@ namespace DVG.Core.Physics
                 var (i1, i2) = CircleLineIntersections(from, to, center, radius);
                 intersection = fix2.SqrDistance(i1, from) < fix2.SqrDistance(i2, from) ?
                     i1 : i2;
-                var normal = fix2.Normalize(intersection - center);
+                var normal = intersection - center;
                 result = (intersection, normal);
                 return true;
             }
+
             return false;
         }
 
@@ -250,47 +255,42 @@ namespace DVG.Core.Physics
             var D = Maths.Sqrt(b * b - 4 * a * c);
             var d1 = -b + D;
             var d2 = -b - D;
-            if (d1 == d2 && d2 == 0)
+            if (d1 == d2 && d2 == fix.Zero)
             {
-                d1 = d2 = 1;
+                d1 = d2 = fix.One;
             }
             var c2 = 2 * c;
-            var t1 = c2 / (d1 == 0 ? d2 : d1);
-            var t2 = c2 / (d2 == 0 ? d1 : d2);
+            var t1 = c2 / (d1 == fix.Zero ? d2 : d1);
+            var t2 = c2 / (d2 == fix.Zero ? d1 : d2);
             return (
                 new fix2(dx, dy) * t1 + p0,
                 new fix2(dx, dy) * t2 + p0);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Intersects(fix2 a, fix2 b, fix2 c, fix2 d, out fix2 intersection)
         {
             intersection = fix2.zero;
 
-            fix d1 = Orient(c, d, a);
-            fix d2 = Orient(c, d, b);
-            fix d3;
-            fix d4;
+            var ab = b - a;
+            var cd = d - c;
 
-            if (d1 * d2 < 0)
-            {
-                d3 = Orient(a, b, c);
-                d4 = Orient(a, b, d);
+            var d1 = Cross(cd, a - c);
+            var d2 = Cross(cd, b - c);
+            if (d1 * d2 >= fix.Zero)
+                return false;
 
-                if (d3 * d4 < 0)
-                {
-                    intersection = (a * d2 - b * d1) / (d2 - d1);
-                    return true;
-                }
-            }
+            var d3 = Cross(ab, c - a);
+            var d4 = Cross(ab, d - a);
+            if (d3 * d4 >= fix.Zero)
+                return false;
 
-            return false;
-
+            intersection = (a * d2 - b * d1) / (d2 - d1);
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static fix Cross(fix2 a, fix2 b) => a.x * b.y - a.y * b.x;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static fix Orient(fix2 a, fix2 b, fix2 c) => Cross(b - a, c - a);
         public static fix2 Projection(fix2 point, fix2 start, fix2 end)
         {
             if (start == end)
@@ -300,7 +300,7 @@ namespace DVG.Core.Physics
             fix2 AB = end - start;
 
             var sqrLength = fix2.SqrLength(AB);
-            if (sqrLength == 0)
+            if (sqrLength <= fix.Zero)
                 return start;
 
             fix dot = fix2.Dot(AP, AB) / sqrLength;
@@ -310,20 +310,17 @@ namespace DVG.Core.Physics
 
         public static fix2 ProjectionOnSegment(fix2 point, fix2 start, fix2 end)
         {
-            if (start == end)
+            var ab = end - start;
+            var sqrLength = fix2.SqrLength(ab);
+            if (sqrLength <= fix.Zero)
                 return start;
 
-            fix2 AP = point - start;
-            fix2 AB = end - start;
+            var t = fix2.Dot(point - start, ab) / sqrLength;
 
-            var sqrLength = fix2.SqrLength(AB);
-            if (sqrLength == 0)
-                return start;
+            if (t <= fix.Zero) return start;
+            if (t >= fix.One) return end;
 
-            fix dot = fix2.Dot(AP, AB) / sqrLength;
-            dot = Maths.Clamp(dot, 0, 1);
-
-            return start + AB * dot;
+            return start + ab * t;
         }
     }
 }

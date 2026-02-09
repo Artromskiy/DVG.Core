@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace DVG.Core.Collections
 {
-    public sealed class Lookup2D<T> where T : struct
+    public sealed class Lookup2D<T>
     {
-        private T?[] _items;
+        private T[] _items;
+        private bool[] _has;
 
         private int _width;
         private int _height;
@@ -19,18 +21,19 @@ namespace DVG.Core.Collections
         public int OffsetX => _offsetX;
         public int OffsetY => _offsetY;
 
-        public Lookup2D(int width = 16, int height = 16)
+        public Lookup2D(int initialSize = 8)
         {
-            if (width <= 0 || height <= 0)
-                throw new ArgumentOutOfRangeException();
+            if (initialSize <= 0)
+                throw new ArgumentOutOfRangeException(nameof(initialSize));
 
-            _width = width;
-            _height = height;
+            _width = initialSize;
+            _height = initialSize;
 
-            _offsetX = width >> 1;
-            _offsetY = height >> 1;
+            _items = new T[_width * _height];
+            _has = new bool[_items.Length];
 
-            _items = new T?[width * height];
+            _offsetX = _width >> 1;
+            _offsetY = _height >> 1;
         }
 
         public T this[int x, int y]
@@ -43,63 +46,70 @@ namespace DVG.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Has(int x, int y)
-        {
-            if (!TryToIndex(x, y, out int index))
-                return false;
-
-            return _items[index].HasValue;
-        }
+        public bool ContainsKey(int x, int y) => Has(x, y);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(int x, int y, out T value)
         {
-            if (TryToIndex(x, y, out int index) && _items[index].HasValue)
+            if (TryToIndex(x, y, out int index) && _has[index])
             {
-                value = _items[index]!.Value;
+                value = _items[index];
                 return true;
             }
 
-            value = default;
+            value = default!;
             return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Remove(int x, int y)
         {
-            if (!TryToIndex(x, y, out int index) || !_items[index].HasValue)
+            if (!TryToIndex(x, y, out int index) || !_has[index])
                 return false;
 
-            _items[index] = null;
+            _has[index] = false;
+            _items[index] = default!;
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
-            Array.Clear(_items, 0, _items.Length);
+            Array.Clear(_has, 0, _has.Length);
+            if (!typeof(T).IsValueType)
+                Array.Clear(_items, 0, _items.Length);
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T Get(int x, int y)
         {
-            return _items[ToIndex(x, y)]!.Value;
+            int index = ToIndex(x, y);
+            if (!_has[index])
+                throw new KeyNotFoundException($"Key ({x},{y}) not found");
+
+            return _items[index];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Set(int x, int y, T value)
         {
             EnsureCapacity(x, y);
-            _items[ToIndex(x, y)] = value;
+            int index = ToIndex(x, y);
+            _items[index] = value;
+            _has[index] = true;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool Has(int x, int y) =>
+            TryToIndex(x, y, out int index) && _has[index];
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int ToIndex(int x, int y)
         {
             int ix = x + _offsetX;
             int iy = y + _offsetY;
-            return ix + iy * _width;
+            return iy * _width + ix;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -108,14 +118,13 @@ namespace DVG.Core.Collections
             int ix = x + _offsetX;
             int iy = y + _offsetY;
 
-            if ((uint)ix >= (uint)_width ||
-                (uint)iy >= (uint)_height)
+            if ((uint)ix >= (uint)_width || (uint)iy >= (uint)_height)
             {
                 index = 0;
                 return false;
             }
 
-            index = ix + iy * _width;
+            index = iy * _width + ix;
             return true;
         }
 
@@ -124,56 +133,63 @@ namespace DVG.Core.Collections
             int ix = x + _offsetX;
             int iy = y + _offsetY;
 
-            if ((uint)ix < (uint)_width &&
-                (uint)iy < (uint)_height)
+            if ((uint)ix < (uint)_width && (uint)iy < (uint)_height)
                 return;
 
             int newWidth = _width;
             int newHeight = _height;
+            int newOffsetX = _offsetX;
+            int newOffsetY = _offsetY;
 
             int minX = Math.Min(ix, 0);
+            int maxX = Math.Max(ix, newWidth - 1);
             int minY = Math.Min(iy, 0);
-            int maxX = Math.Max(ix, _width - 1);
-            int maxY = Math.Max(iy, _height - 1);
+            int maxY = Math.Max(iy, newHeight - 1);
 
             while (minX < 0 || maxX >= newWidth)
             {
+                int grow = newWidth;
                 newWidth <<= 1;
-                _offsetX += newWidth >> 2;
-                minX += newWidth >> 2;
-                maxX += newWidth >> 2;
+                newOffsetX += grow >> 1;
+                minX += grow >> 1;
+                maxX += grow >> 1;
             }
 
             while (minY < 0 || maxY >= newHeight)
             {
+                int grow = newHeight;
                 newHeight <<= 1;
-                _offsetY += newHeight >> 2;
-                minY += newHeight >> 2;
-                maxY += newHeight >> 2;
+                newOffsetY += grow >> 1;
+                minY += grow >> 1;
+                maxY += grow >> 1;
             }
 
-            Resize(newWidth, newHeight);
+            Resize(newWidth, newHeight, newOffsetX, newOffsetY);
         }
 
-        private void Resize(int newWidth, int newHeight)
+        private void Resize(int newWidth, int newHeight, int newOffsetX, int newOffsetY)
         {
-            var newItems = new T?[newWidth * newHeight];
+            var newItems = new T[newWidth * newHeight];
+            var newHas = new bool[newItems.Length];
+
+            int dx = newOffsetX - _offsetX;
+            int dy = newOffsetY - _offsetY;
 
             for (int y = 0; y < _height; y++)
             {
-                Array.Copy(
-                    _items,
-                    y * _width,
-                    newItems,
-                    (y + (_offsetY - (_height >> 1))) * newWidth + (_offsetX - (_width >> 1)),
-                    _width
-                );
+                int srcRow = y * _width;
+                int dstRow = (y + dy) * newWidth + dx;
+
+                Array.Copy(_items, srcRow, newItems, dstRow, _width);
+                Array.Copy(_has, srcRow, newHas, dstRow, _width);
             }
 
             _items = newItems;
+            _has = newHas;
             _width = newWidth;
             _height = newHeight;
+            _offsetX = newOffsetX;
+            _offsetY = newOffsetY;
         }
     }
 }
-
