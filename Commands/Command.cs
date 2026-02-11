@@ -1,8 +1,7 @@
-﻿using DVG.Commands;
-using System;
+﻿using System;
 using System.Runtime.Serialization;
 
-namespace DVG.Core
+namespace DVG.Commands
 {
     [DataContract]
     public struct Command<D> : ICommand, IComparable<Command<D>>
