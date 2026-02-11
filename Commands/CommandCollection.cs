@@ -1,12 +1,13 @@
-﻿using System;
+﻿using DVG.Core;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace DVG.Core
+namespace DVG.Commands
 {
     public sealed class CommandCollection
     {
-        private readonly Dictionary<Type, IDictionary> _lists = new Dictionary<Type, IDictionary>();
+        private readonly Dictionary<Type, IDictionary> _lists = new();
 
         public void Add<T>(Command<T> value)
             where T : ICommandData

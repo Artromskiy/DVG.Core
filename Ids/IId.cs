@@ -1,4 +1,4 @@
-namespace DVG.Core
+namespace DVG.Ids
 {
     public interface IId
     {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DVG.Ids;
+using System.Collections.Generic;
 
 namespace DVG.Core.Tools
 {

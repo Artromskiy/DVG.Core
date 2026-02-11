@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DVG.Core
+namespace DVG.Commands
 {
     public interface ICommand : IComparable<ICommand>
     {

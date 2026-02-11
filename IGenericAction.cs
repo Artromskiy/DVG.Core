@@ -1,4 +1,4 @@
-﻿namespace DVG.Core
+﻿namespace DVG
 {
     public interface IGenericAction<K>
     {
