@@ -3,7 +3,7 @@
 namespace DVG.Components
 {
     [Component(true)]
-    public struct RandomSource
+    public struct RandomSeed
     {
         public int Value;
     }
