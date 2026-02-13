@@ -4,9 +4,7 @@
     {
         private readonly T?[] _data;
         public ref T? this[int wrapTick] => ref _data[wrapTick];
-        //public static History<T> Create() => new(Constants.HistoryTicks);
 
         public History(int length) => _data = new T?[length];
-
     }
 }

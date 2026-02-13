@@ -1,12 +1,11 @@
-﻿using System;
+﻿using DVG.Components;
 
 namespace DVG.Commands
 {
-    public interface ICommand : IComparable<ICommand>
+    public interface ICommand
     {
-        int EntityId { get; } // reciever id
-        int CommandId { get; } // generic argument type id
-        int ClientId { get; } // who
-        int Tick { get; } // when
+        ClientId ClientId { get; }
+        int CommandId { get; }
+        int Tick { get; }
     }
 }
