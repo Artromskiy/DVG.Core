@@ -1,4 +1,4 @@
-﻿namespace DVG.SkyPirates.Shared.Tools
+﻿namespace DVG.Collections
 {
     public sealed class GenericCreator
     {

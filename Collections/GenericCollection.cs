@@ -3,25 +3,33 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace DVG.SkyPirates.Shared.Tools
+namespace DVG.Collections
 {
     public sealed class GenericCollection
     {
+        private struct Entry
+        {
+            public int Offset;
+            public GCHandle Handle;
+            public bool IsManaged;
+            public bool Exists;
+        }
+
         private byte[] _buffer;
         private int _used;
 
-        private readonly Dictionary<Type, int> _offsets = new();
-        private readonly Dictionary<Type, GCHandle> _handles = new();
-        private readonly Dictionary<Type, bool> _has = new();
+        private readonly Dictionary<Type, Entry> _entries = new();
 
         public GenericCollection(int capacity = 256)
         {
             _buffer = new byte[capacity];
         }
+
         ~GenericCollection()
         {
             Clear();
         }
+
 
         public void Add<T>(T obj)
         {
@@ -31,8 +39,15 @@ namespace DVG.SkyPirates.Shared.Tools
 
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
-                _handles[type] = GCHandle.Alloc(obj!, GCHandleType.Normal);
-                _has[type] = true;
+                var handle = GCHandle.Alloc(obj!, GCHandleType.Normal);
+
+                _entries[type] = new Entry
+                {
+                    Handle = handle,
+                    IsManaged = true,
+                    Exists = true
+                };
+
                 return;
             }
 
@@ -42,31 +57,27 @@ namespace DVG.SkyPirates.Shared.Tools
             ref byte dst = ref _buffer[_used];
             Unsafe.WriteUnaligned(ref dst, obj);
 
-            _offsets[type] = _used;
-            _has[type] = true;
+            _entries[type] = new Entry
+            {
+                Offset = _used,
+                IsManaged = false,
+                Exists = true
+            };
 
             _used += size;
         }
 
         public bool TryGet<T>(out T obj)
         {
-            var type = typeof(T);
-
-            if (!_has.TryGetValue(type, out var exists) || !exists)
+            if (_entries.TryGetValue(typeof(T), out var entry) && entry.Exists)
             {
-                obj = default!;
-                return false;
-            }
+                if (entry.IsManaged)
+                {
+                    obj = (T)entry.Handle.Target!;
+                    return true;
+                }
 
-            if (_handles.TryGetValue(type, out var handle))
-            {
-                obj = (T)handle.Target!;
-                return true;
-            }
-
-            if (_offsets.TryGetValue(type, out var offset))
-            {
-                ref byte src = ref _buffer[offset];
+                ref byte src = ref _buffer[entry.Offset];
                 obj = Unsafe.ReadUnaligned<T>(ref src);
                 return true;
             }
@@ -79,22 +90,19 @@ namespace DVG.SkyPirates.Shared.Tools
         {
             var type = typeof(T);
 
-            if (!_has.TryGetValue(type, out var exists) || !exists)
+            if (!_entries.TryGetValue(type, out var entry) || !entry.Exists)
                 return;
 
-            if (_handles.TryGetValue(type, out var handle))
-            {
-                handle.Free();
-                _handles.Remove(type);
-            }
+            if (entry.IsManaged)
+                entry.Handle.Free();
 
-            _offsets.Remove(type);
-            _has[type] = false;
+            entry.Exists = false;
+            _entries[type] = entry;
         }
 
         public bool Has<T>()
         {
-            return _has.TryGetValue(typeof(T), out var exists) && exists;
+            return _entries.TryGetValue(typeof(T), out var entry) && entry.Exists;
         }
 
         private void EnsureCapacity(int required)
@@ -102,19 +110,19 @@ namespace DVG.SkyPirates.Shared.Tools
             if (required <= _buffer.Length)
                 return;
 
-            var doubled = _buffer.Length * 2;
-            int newSize = required > doubled ? required : doubled;
+            int newSize = Math.Max(required, _buffer.Length * 2);
             Array.Resize(ref _buffer, newSize);
         }
 
         public void Clear()
         {
-            foreach (var handle in _handles.Values)
-                handle.Free();
+            foreach (var entry in _entries.Values)
+            {
+                if (entry.IsManaged && entry.Exists)
+                    entry.Handle.Free();
+            }
 
-            _handles.Clear();
-            _offsets.Clear();
-            _has.Clear();
+            _entries.Clear();
         }
     }
 }
