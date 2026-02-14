@@ -18,7 +18,7 @@
             return value % (max - min) + min;
         }
 
-        public static fix NextRange(this ref RandomSeed seed, fix min, fix max)
+        public static fix NextFixRange(this ref RandomSeed seed, fix min, fix max)
         {
             return new fix(NextRange(ref seed, min.raw, max.raw + 1));
         }
