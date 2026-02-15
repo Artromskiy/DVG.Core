@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace DVG.Collections
 {
-    public sealed class GenericCollection
+    public sealed class GenericCollection : IDisposable
     {
         private struct Entry
         {
@@ -18,6 +18,7 @@ namespace DVG.Collections
         private int _used;
 
         private readonly Dictionary<Type, Entry> _entries = new();
+        private readonly List<Type> _keysCache = new();
 
         public GenericCollection(int capacity = 256)
         {
@@ -26,37 +27,56 @@ namespace DVG.Collections
 
         ~GenericCollection()
         {
-            Clear();
+            Dispose();
         }
-
 
         public void Add<T>(T obj)
         {
             var type = typeof(T);
 
-            Remove<T>();
-
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
+                if (_entries.TryGetValue(type, out var existing) &&
+                    existing.Exists &&
+                    existing.Handle.HasValue)
+                    existing.Handle.Value.Free();
+
                 var handle = GCHandle.Alloc(obj!, GCHandleType.Normal);
+
                 _entries[type] = new Entry
                 {
                     Handle = handle,
                     Exists = true
                 };
-
                 return;
             }
 
             int size = Unsafe.SizeOf<T>();
-            EnsureCapacity(_used + size);
 
-            ref byte dst = ref _buffer[_used];
-            Unsafe.WriteUnaligned(ref dst, obj);
+            if (_entries.TryGetValue(type, out var entry))
+            {
+                if (!entry.Exists)
+                {
+                    ref byte dst = ref _buffer[entry.Offset];
+                    Unsafe.WriteUnaligned(ref dst, obj);
+
+                    entry.Exists = true;
+                    _entries[type] = entry;
+                    return;
+                }
+                ref byte rewrite = ref _buffer[entry.Offset];
+                Unsafe.WriteUnaligned(ref rewrite, obj);
+                return;
+            }
+
+            EnsureCapacity(_used + size);
+            int offset = _used;
+            ref byte newDst = ref _buffer[offset];
+            Unsafe.WriteUnaligned(ref newDst, obj);
 
             _entries[type] = new Entry
             {
-                Offset = _used,
+                Offset = offset,
                 Exists = true
             };
 
@@ -113,6 +133,22 @@ namespace DVG.Collections
 
         public void Clear()
         {
+            _keysCache.Clear();
+            _keysCache.AddRange(_entries.Keys);
+            foreach (var key in _keysCache)
+            {
+                var entry = _entries[key];
+                if (entry.Handle.HasValue && entry.Exists)
+                    entry.Handle.Value.Free();
+                entry.Handle = null;
+                entry.Exists = false;
+                _entries[key] = entry;
+            }
+        }
+
+        public void Dispose()
+        {
+            _used = 0;
             foreach (var entry in _entries.Values)
             {
                 if (entry.Handle.HasValue && entry.Exists)
