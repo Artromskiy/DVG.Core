@@ -50,6 +50,21 @@ namespace DVG.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ref T GetOrAddRef(int id)
+        {
+            int index = id + _offset;
+            if ((uint)index >= (uint)_items.Length)
+            {
+                Grow(id);
+                index = id + _offset;
+            }
+
+            _has[index] = true;
+            return ref _items[index];
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Remove(int id)
         {
             if (!TryToIndex(id, out int index) || !_has[index])
@@ -80,13 +95,7 @@ namespace DVG.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Set(int id, T value)
-        {
-            EnsureCapacity(id);
-            int index = ToIndex(id);
-            _items[index] = value;
-            _has[index] = true;
-        }
+        private void Set(int id, T value) => GetOrAddRef(id) = value;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool Has(int id) =>
@@ -102,7 +111,7 @@ namespace DVG.Core.Collections
             return (uint)index < (uint)_items.Length;
         }
 
-        private void EnsureCapacity(int id)
+        private void Grow(int id)
         {
             int index = id + _offset;
             if ((uint)index < (uint)_items.Length)
