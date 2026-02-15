@@ -1,125 +1,127 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DVG.Core.Collections;
+using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace DVG.Collections
 {
     public sealed class GenericCollection : IDisposable
     {
-        private struct Entry
-        {
-            public GCHandle? Handle;
-            public int Offset;
-            public bool Exists;
-        }
+        private static int _nextTypeId;
 
+        private int _usedEntries;
+        private int _usedBytes;
         private byte[] _buffer;
-        private int _used;
 
-        private readonly Dictionary<Type, Entry> _entries = new();
-        private readonly List<Type> _keysCache = new();
+        private readonly Lookup<Entry> _entries = new();
+        private readonly Lookup<int> _typeToEntry = new();
 
         public GenericCollection(int capacity = 256)
         {
             _buffer = new byte[capacity];
         }
 
-        ~GenericCollection()
+        private int GetOrCreateEntryId<T>()
         {
-            Dispose();
+            var typeId = GenericTypeId<T>.TypeId;
+            if (!_typeToEntry.TryGetValue(typeId, out var entryId))
+                _typeToEntry[typeId] = entryId = _usedEntries++;
+            return entryId;
         }
 
-        public void Add<T>(T obj)
+        private bool TryGetEntryId<T>(out int entryId)
         {
-            var type = typeof(T);
+            return _typeToEntry.TryGetValue(GenericTypeId<T>.TypeId, out entryId);
+        }
 
-            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-            {
-                if (_entries.TryGetValue(type, out var existing) &&
-                    existing.Exists &&
-                    existing.Handle.HasValue)
-                    existing.Handle.Value.Free();
+        public void Add<T>(T value)
+        {
+            int id = GetOrCreateEntryId<T>();
+            ref var entry = ref _entries.GetOrAddRef(id);
 
-                var handle = GCHandle.Alloc(obj!, GCHandleType.Normal);
-
-                _entries[type] = new Entry
-                {
-                    Handle = handle,
-                    Exists = true
-                };
-                return;
-            }
-
-            int size = Unsafe.SizeOf<T>();
-
-            if (_entries.TryGetValue(type, out var entry))
+            if (!RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
                 if (!entry.Exists)
                 {
-                    ref byte dst = ref _buffer[entry.Offset];
-                    Unsafe.WriteUnaligned(ref dst, obj);
+                    int size = Unsafe.SizeOf<T>();
+                    EnsureCapacity(_usedBytes + size);
 
-                    entry.Exists = true;
-                    _entries[type] = entry;
-                    return;
+                    entry.Offset = _usedBytes;
+                    _usedBytes += size;
                 }
-                ref byte rewrite = ref _buffer[entry.Offset];
-                Unsafe.WriteUnaligned(ref rewrite, obj);
-                return;
+
+                ref byte dst = ref _buffer[entry.Offset];
+                Unsafe.WriteUnaligned(ref dst, value);
+            }
+            else
+            {
+                entry.Reference = value;
             }
 
-            EnsureCapacity(_used + size);
-            int offset = _used;
-            ref byte newDst = ref _buffer[offset];
-            Unsafe.WriteUnaligned(ref newDst, obj);
-
-            _entries[type] = new Entry
-            {
-                Offset = offset,
-                Exists = true
-            };
-
-            _used += size;
+            entry.Exists = true;
         }
 
-        public bool TryGet<T>(out T obj)
-        {
-            if (_entries.TryGetValue(typeof(T), out var entry) && entry.Exists)
-            {
-                if (entry.Handle.HasValue)
-                {
-                    obj = (T)entry.Handle.Value.Target!;
-                    return true;
-                }
+        // ========================= GET =========================
 
+        public bool TryGet<T>(out T value)
+        {
+            if (!TryGetEntryId<T>(out var id) ||
+                !_entries.TryGetValue(id, out var entry) ||
+                !entry.Exists)
+            {
+                value = default!;
+                return false;
+            }
+
+            if (!RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
                 ref byte src = ref _buffer[entry.Offset];
-                obj = Unsafe.ReadUnaligned<T>(ref src);
-                return true;
+                value = Unsafe.ReadUnaligned<T>(ref src);
+            }
+            else
+            {
+                value = (T)entry.Reference!;
             }
 
-            obj = default!;
-            return false;
-        }
-
-        public void Remove<T>()
-        {
-            var type = typeof(T);
-
-            if (!_entries.TryGetValue(type, out var entry) || !entry.Exists)
-                return;
-
-            if (entry.Handle.HasValue)
-                entry.Handle.Value.Free();
-
-            entry.Exists = false;
-            entry.Handle = null;
-            _entries[type] = entry;
+            return true;
         }
 
         public bool Has<T>()
         {
-            return _entries.TryGetValue(typeof(T), out var entry) && entry.Exists;
+            return TryGetEntryId<T>(out var id)
+                && _entries.TryGetValue(id, out var entry)
+                && entry.Exists;
+        }
+
+        public void Remove<T>()
+        {
+            if (TryGetEntryId<T>(out var id) &&
+                _entries.TryGetValue(id, out var entry))
+            {
+                entry.Exists = false;
+                entry.Reference = null;
+                _entries[id] = entry;
+            }
+        }
+
+        public void Clear()
+        {
+            for (int i = 0; i < _usedEntries; i++)
+            {
+                if (!_entries.TryGetValue(i, out var e))
+                    continue;
+
+                e.Exists = false;
+                e.Reference = null;
+                _entries[i] = e;
+            }
+        }
+
+        public void Dispose()
+        {
+            _usedEntries = 0;
+            _usedBytes = 0;
+            _entries.Clear();
+            _typeToEntry.Clear();
         }
 
         private void EnsureCapacity(int required)
@@ -127,35 +129,19 @@ namespace DVG.Collections
             if (required <= _buffer.Length)
                 return;
 
-            int newSize = Math.Max(required, _buffer.Length * 2);
-            Array.Resize(ref _buffer, newSize);
+            Array.Resize(ref _buffer, Math.Max(required, _buffer.Length * 2));
         }
 
-        public void Clear()
+        private struct Entry
         {
-            _keysCache.Clear();
-            _keysCache.AddRange(_entries.Keys);
-            foreach (var key in _keysCache)
-            {
-                var entry = _entries[key];
-                if (entry.Handle.HasValue && entry.Exists)
-                    entry.Handle.Value.Free();
-                entry.Handle = null;
-                entry.Exists = false;
-                _entries[key] = entry;
-            }
+            public object? Reference;
+            public int Offset;
+            public bool Exists;
         }
 
-        public void Dispose()
+        private static class GenericTypeId<T>
         {
-            _used = 0;
-            foreach (var entry in _entries.Values)
-            {
-                if (entry.Handle.HasValue && entry.Exists)
-                    entry.Handle.Value.Free();
-            }
-
-            _entries.Clear();
+            public static readonly int TypeId = _nextTypeId++;
         }
     }
 }
