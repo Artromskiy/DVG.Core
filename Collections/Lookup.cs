@@ -64,7 +64,7 @@ namespace DVG.Core.Collections
         public void Clear()
         {
             Array.Clear(_has, 0, _has.Length);
-            if (!typeof(T).IsValueType)
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
                 Array.Clear(_items, 0, _items.Length);
         }
 

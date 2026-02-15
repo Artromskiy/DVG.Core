@@ -9,9 +9,8 @@ namespace DVG.Collections
     {
         private struct Entry
         {
+            public GCHandle? Handle;
             public int Offset;
-            public GCHandle Handle;
-            public bool IsManaged;
             public bool Exists;
         }
 
@@ -40,11 +39,9 @@ namespace DVG.Collections
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
                 var handle = GCHandle.Alloc(obj!, GCHandleType.Normal);
-
                 _entries[type] = new Entry
                 {
                     Handle = handle,
-                    IsManaged = true,
                     Exists = true
                 };
 
@@ -60,7 +57,6 @@ namespace DVG.Collections
             _entries[type] = new Entry
             {
                 Offset = _used,
-                IsManaged = false,
                 Exists = true
             };
 
@@ -71,9 +67,9 @@ namespace DVG.Collections
         {
             if (_entries.TryGetValue(typeof(T), out var entry) && entry.Exists)
             {
-                if (entry.IsManaged)
+                if (entry.Handle.HasValue)
                 {
-                    obj = (T)entry.Handle.Target!;
+                    obj = (T)entry.Handle.Value.Target!;
                     return true;
                 }
 
@@ -93,10 +89,11 @@ namespace DVG.Collections
             if (!_entries.TryGetValue(type, out var entry) || !entry.Exists)
                 return;
 
-            if (entry.IsManaged)
-                entry.Handle.Free();
+            if (entry.Handle.HasValue)
+                entry.Handle.Value.Free();
 
             entry.Exists = false;
+            entry.Handle = null;
             _entries[type] = entry;
         }
 
@@ -118,8 +115,8 @@ namespace DVG.Collections
         {
             foreach (var entry in _entries.Values)
             {
-                if (entry.IsManaged && entry.Exists)
-                    entry.Handle.Free();
+                if (entry.Handle.HasValue && entry.Exists)
+                    entry.Handle.Value.Free();
             }
 
             _entries.Clear();
