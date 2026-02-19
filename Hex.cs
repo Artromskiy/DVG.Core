@@ -7,37 +7,37 @@ namespace DVG.Core
         private static readonly fix _sqrtThree = Maths.Sqrt((fix)3);
         private static readonly fix _sqrtThreeOverTwo = _sqrtThree / 2;
 
-        private static readonly fix _outerRadius = fix.One;
-        private static readonly fix _innerRadius = _outerRadius * _sqrtThreeOverTwo;
+        public static readonly fix OuterRadius = fix.One;
+        public static readonly fix InnerRadius = OuterRadius * _sqrtThreeOverTwo;
 
         private static readonly fix _oneAndHalf = fix.One + fix.One / 2;
-        private static readonly fix _twoOverThreeOverOuterRadius = (fix)2 / 3 / _outerRadius;
-        private static readonly fix _threeOuterRadius = _outerRadius * 3;
-        private static readonly fix _oneAndHalfOuterRadius = _outerRadius * _oneAndHalf;
+        private static readonly fix _twoOverThreeOverOuterRadius = (fix)2 / 3 / OuterRadius;
+        private static readonly fix _threeOuterRadius = OuterRadius * 3;
+        private static readonly fix _oneAndHalfOuterRadius = OuterRadius * _oneAndHalf;
 
-        private static readonly fix _threeOverFourOuterRadius = _outerRadius * 3 / 4;
-        private static readonly fix _halfInnerRadius = _innerRadius / 2;
+        private static readonly fix _threeOverFourOuterRadius = OuterRadius * 3 / 4;
+        private static readonly fix _halfInnerRadius = InnerRadius / 2;
 
         private static readonly fix _hexHeight = fix.One / 2;
 
         private static readonly fix2[] _points = new fix2[]
         {
-            new(_outerRadius / 2, _innerRadius),
-            new(_outerRadius, 0),
-            new(_outerRadius / 2, -_innerRadius),
-            new(-_outerRadius / 2, -_innerRadius),
-            new(-_outerRadius, 0),
-            new(-_outerRadius / 2, _innerRadius),
+            new(OuterRadius / 2, InnerRadius),
+            new(OuterRadius, 0),
+            new(OuterRadius / 2, -InnerRadius),
+            new(-OuterRadius / 2, -InnerRadius),
+            new(-OuterRadius, 0),
+            new(-OuterRadius / 2, InnerRadius),
         };
 
         private static readonly fix2[] _normals = new fix2[]
         {
             fix2.Normalize(new fix2(_threeOverFourOuterRadius, _halfInnerRadius)),
             fix2.Normalize(new fix2(_threeOverFourOuterRadius, -_halfInnerRadius)),
-            fix2.Normalize(new fix2(0, -_innerRadius)),
+            fix2.Normalize(new fix2(0, -InnerRadius)),
             fix2.Normalize(new fix2(-_threeOverFourOuterRadius, -_halfInnerRadius)),
             fix2.Normalize(new fix2(-_threeOverFourOuterRadius, _halfInnerRadius)),
-            fix2.Normalize(new fix2(0, _innerRadius)),
+            fix2.Normalize(new fix2(0, InnerRadius)),
         };
 
         private static readonly int2[] _axialNear = new int2[]
@@ -88,9 +88,9 @@ namespace DVG.Core
         public static int3 WorldToAxial(fix3 pos)
         {
             fix q = pos.x * _twoOverThreeOverOuterRadius;
-            fix r = (_sqrtThree * pos.y - pos.x) / _threeOuterRadius;
+            fix r = (_sqrtThree * pos.z - pos.x) / _threeOuterRadius;
             var axial = AxialRound(q, r).x_y;
-            axial.y = (int)Maths.Floor(pos.y / _hexHeight);
+            axial.y = WorldToAxialY(pos.y);
             return axial;
         }
 
@@ -100,7 +100,7 @@ namespace DVG.Core
             int r = axial.y;
 
             fix x = _oneAndHalfOuterRadius * q;
-            fix y = _innerRadius * (r + r + q);
+            fix y = InnerRadius * (r + r + q);
             return new fix2(x, y);
         }
 
@@ -120,10 +120,12 @@ namespace DVG.Core
             return new int2(col, row);
         }
 
+        public static fix AxialToWorldY(int y) => (fix)y * _hexHeight;
+        public static int WorldToAxialY(fix y) => (int)Maths.Floor(y / _hexHeight);
         public static fix3 AxialToWorld(int3 axial)
         {
             var pos = AxialToWorld(axial.xz).x_y;
-            pos.y = (fix)axial.y * _hexHeight;
+            pos.y = AxialToWorldY(axial.y);
             return pos;
         }
     }
