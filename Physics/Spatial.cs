@@ -1,324 +1,202 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-namespace DVG.Core.Physics
+namespace DVG.Physics
 {
     public static class Spatial
     {
-        private const int _depth = 3;
-        private static readonly fix _skin = new fix(1024);
-
-        public static fix2 Solve(List<Segment> segments, fix2 from, fix2 to)
+        public static bool Intersects(Segment segment, fix2 from, fix2 to, ref fix bestSqrDist, ref Collision collision)
         {
-            var castFrom = from;
-            var endPoint = to;
-            int depth = _depth;
-            while (depth > 0)
-            {
-                if (!RayCast(segments, castFrom, endPoint, out var res) &&
-                    !RayCast(segments, from, endPoint, out _))
-                {
-                    break;
-                }
-
-                var newCastFrom = res.intersection + res.normal * _skin;
-
-                if (RayCast(segments, from, newCastFrom, out _))
-                {
-                    endPoint = castFrom;
-                    break;
-                }
-
-                if (fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
-                {
-                    endPoint = castFrom;
-                    break;
-                }
-
-                castFrom = newCastFrom;
-                fix2 tangent = res.normal.yx;
-                tangent.x = -tangent.x;
-                endPoint = Projection(endPoint, castFrom, castFrom + tangent);
-
-                depth--;
-            }
-
-            if (depth == 0)
-            {
-                return from;
-            }
-            return endPoint;
-        }
-
-        public static fix2 SolveCircleMove(List<Segment> segments, fix2 from, fix2 to, fix radius)
-        {
-            var castFrom = from;
-            var endPoint = to;
-            int depth = _depth;
-            while (depth > 0)
-            {
-                if (!CircleCast(segments, castFrom, endPoint, radius, out var res) &&
-                    !CircleCast(segments, from, endPoint, radius, out _))
-                {
-                    break;
-                }
-
-                res.normal = fix2.Normalize(res.normal);
-
-                var newCastFrom = res.intersection + res.normal * _skin;
-
-                if (CircleCast(segments, from, newCastFrom, radius, out _))
-                {
-                    endPoint = castFrom;
-                    break;
-                }
-
-                if (depth != _depth && fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
-                {
-                    endPoint = castFrom;
-                    break;
-                }
-
-                castFrom = newCastFrom;
-                fix2 tangent = res.normal.yx;
-                tangent.x = -tangent.x;
-                endPoint = Projection(endPoint, castFrom, castFrom + tangent);
-
-                depth--;
-            }
-
-            if (depth == 0)
-            {
-                return from;
-            }
-            return endPoint;
-        }
-
-        public static fix2 SolveCircleMove(Segment[] segments, fix2 from, fix2 to, fix radius)
-        {
-            var castFrom = from;
-            var endPoint = to;
-            int depth = _depth;
-            while (depth > 0)
-            {
-                if (!CircleCast(segments, castFrom, endPoint, radius, out var res) &&
-                    !CircleCast(segments, from, endPoint, radius, out _))
-                {
-                    break;
-                }
-
-                res.normal = fix2.Normalize(res.normal);
-
-                var newCastFrom = res.intersection + res.normal * _skin;
-
-                if (CircleCast(segments, from, newCastFrom, radius, out _))
-                {
-                    endPoint = castFrom;
-                    break;
-                }
-
-                if (depth != _depth && fix2.SqrDistance(newCastFrom, to) >= fix2.SqrDistance(castFrom, to))
-                {
-                    endPoint = castFrom;
-                    break;
-                }
-
-                castFrom = newCastFrom;
-                fix2 tangent = res.normal.yx;
-                tangent.x = -tangent.x;
-                endPoint = Projection(endPoint, castFrom, castFrom + tangent);
-
-                depth--;
-            }
-
-            if (depth == 0)
-            {
-                return from;
-            }
-            return endPoint;
-        }
-
-
-        public static bool CircleCast(Segment[] lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
-        {
-            fix minSqrDistance = fix.MaxValue;
-            result = default;
-            bool found = false;
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (!CircleIntersection(lines[i], from, to, radius, out var res))
-                    continue;
-
-                var sqrDistance = fix2.SqrDistance(from, res.intersection);
-                if (sqrDistance > minSqrDistance)
-                    continue;
-
-                result = res;
-                minSqrDistance = sqrDistance;
-                found = true;
-            }
-            return found;
-        }
-
-        public static bool RayCast(List<Segment> lines, fix2 from, fix2 to, out (fix2 intersection, fix2 normal) result)
-        {
-            fix minSqrDistance = fix.MaxValue;
-            result = default;
-            bool found = false;
-            for (int i = 0; i < lines.Count; i++)
-            {
-                if (!LineIntersection(lines[i], from, to, out var res))
-                    continue;
-
-                var sqrDistance = fix2.SqrDistance(from, res.intersection);
-                if (sqrDistance > minSqrDistance)
-                    continue;
-
-                result = res;
-                minSqrDistance = sqrDistance;
-                found = true;
-            }
-            return found;
-        }
-
-        public static bool CircleCast(List<Segment> lines, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result)
-        {
-            fix minSqrDistance = fix.MaxValue;
-            result = default;
-            bool found = false;
-            for (int i = 0; i < lines.Count; i++)
-            {
-                if (!CircleIntersection(lines[i], from, to, radius, out var res))
-                    continue;
-
-                var sqrDistance = fix2.SqrDistance(from, res.intersection);
-                if (sqrDistance > minSqrDistance)
-                    continue;
-
-                result = res;
-                minSqrDistance = sqrDistance;
-                found = true;
-            }
-            return found;
-        }
-
-        public static bool LineIntersection(Segment segment, fix2 from, fix2 to, out (fix2 intersection, fix2 normal) result)
-        {
-            result = default;
-            if (Intersects(segment.Start, segment.End, from, to, out var intersection))
-            {
-                result = (intersection, segment.Normal);
-                return true;
-            }
-            return false;
-        }
-
-        public static bool CircleIntersection(Segment segment, fix2 from, fix2 to, fix radius, out (fix2 intersection, fix2 normal) result) // returned normal is not normalized
-        {
-            var offset1 = segment.Normal * radius;
-            var newS = segment.Start + offset1;
-            var newE = segment.End + offset1;
-            result = default;
-            if (Intersects(newS, newE, from, to, out var intersection))
-            {
-                result = (intersection, segment.Normal);
-                return true;
-            }
-            var projS = ProjectionOnSegment(segment.Start, from, to);
-            var projE = ProjectionOnSegment(segment.End, from, to);
-            var sqrRadius = radius * radius;
-            var sqrDistanceEdgeS = fix2.SqrDistance(projS, segment.Start);
-            var sqrDistanceEdgeE = fix2.SqrDistance(projE, segment.End);
-            if (sqrDistanceEdgeS < sqrRadius || sqrDistanceEdgeE < sqrRadius)
-            {
-                var center = sqrDistanceEdgeS <= sqrDistanceEdgeE ? segment.Start : segment.End;
-                var (i1, i2) = CircleLineIntersections(from, to, center, radius);
-                intersection = fix2.SqrDistance(i1, from) < fix2.SqrDistance(i2, from) ?
-                    i1 : i2;
-                var normal = intersection - center;
-                result = (intersection, normal);
-                return true;
-            }
-
-            return false;
-        }
-
-        public static (fix2, fix2) CircleLineIntersections(fix2 p0, fix2 p1, fix2 center, fix radius)
-        {
-            var dx = p1.x - p0.x;
-            var dy = p1.y - p0.y;
-            var ddx = p0.x - center.x;
-            var ddy = p0.y - center.y;
-            var a = (dx * dx) + (dy * dy);
-            var b = 2 * dx * ddx + 2 * dy * ddy;
-            var c = ddx * ddx + ddy * ddy - radius * radius;
-            var D = Maths.Sqrt(b * b - 4 * a * c);
-            var d1 = -b + D;
-            var d2 = -b - D;
-            if (d1 == d2 && d2 == fix.Zero)
-            {
-                d1 = d2 = fix.One;
-            }
-            var c2 = 2 * c;
-            var t1 = c2 / (d1 == fix.Zero ? d2 : d1);
-            var t2 = c2 / (d2 == fix.Zero ? d1 : d2);
-            return (
-                new fix2(dx, dy) * t1 + p0,
-                new fix2(dx, dy) * t2 + p0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Intersects(fix2 a, fix2 b, fix2 c, fix2 d, out fix2 intersection)
-        {
-            intersection = fix2.zero;
-
-            var ab = b - a;
-            var cd = d - c;
-
-            var d1 = Cross(cd, a - c);
-            var d2 = Cross(cd, b - c);
-            if (d1 * d2 >= fix.Zero)
+            if (!Intersects(segment.Start, segment.End, from, to, out var currentCollision))
                 return false;
 
-            var d3 = Cross(ab, c - a);
-            var d4 = Cross(ab, d - a);
-            if (d3 * d4 >= fix.Zero)
-                return false;
-
-            intersection = (a * d2 - b * d1) / (d2 - d1);
+            var sqrDist = fix2.SqrDistance(from, currentCollision.Contact);
+            CombineCollision(sqrDist, currentCollision, ref bestSqrDist, ref collision);
             return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static fix Cross(fix2 a, fix2 b) => a.x * b.y - a.y * b.x;
-        public static fix2 Projection(fix2 point, fix2 start, fix2 end)
+        public static bool Intersects(fix2 position, fix radius, fix2 from, fix2 to, ref fix bestSqrDist, ref Collision collision)
         {
-            if (start == end)
-                return start;
+            if (!Intersects(position, radius, from, to, out var currentCollision))
+                return false;
 
-            fix2 AP = point - start;
-            fix2 AB = end - start;
-
-            var sqrLength = fix2.SqrLength(AB);
-            if (sqrLength <= fix.Zero)
-                return start;
-
-            fix dot = fix2.Dot(AP, AB) / sqrLength;
-
-            return start + AB * dot;
+            var sqrDist = fix2.SqrDistance(from, currentCollision.Contact);
+            CombineCollision(sqrDist, currentCollision, ref bestSqrDist, ref collision);
+            return true;
         }
 
-        public static fix2 ProjectionOnSegment(fix2 point, fix2 start, fix2 end)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CombineCollision(fix sqrDist, Collision currentCollision, ref fix bestSqrDist, ref Collision collision)
+        {
+            if (sqrDist > bestSqrDist)
+                return;
+
+            if (sqrDist == bestSqrDist)
+            {
+                collision.Normal = (collision.Normal + currentCollision.Normal) / 2;
+                collision.Contact = (collision.Contact + currentCollision.Contact) / 2;
+            }
+            else
+            {
+                collision = currentCollision;
+            }
+            bestSqrDist = sqrDist;
+        }
+
+        public static bool Intersects(fix2 position, fix radius, fix2 from, fix2 to, out Collision collision)
+        {
+            collision = default;
+
+            var sqrRadius = radius * radius;
+            var proj = Projection(position, from, to);
+            if (fix2.SqrDistance(proj, position) > sqrRadius)
+                return false;
+
+            var d = to - from;
+            var f = from - position;
+            var a = fix2.Dot(d, d);
+            var b = fix2.Dot(f, d);
+            var sqrF = fix2.Dot(f, f);
+            var c = sqrF - sqrRadius;
+
+            fix discriminant = (b * b - a * c);
+            if (discriminant < 0)
+                return false;
+
+            discriminant = Maths.Sqrt(discriminant);
+            var t1 = (-b - discriminant) / (a);
+            var t2 = (-b + discriminant) / (a);
+            if (t1 >= 0 && t1 <= 1)
+            {
+                var contact = from + t1 * d;
+                var normal = fix2.Normalize(contact - position);
+                collision = new()
+                {
+                    Contact = contact,
+                    Normal = normal,
+                };
+                return true;
+            }
+            if (t2 >= 0 && t2 <= 1)
+            {
+                fix2 normal = sqrF <= 0 ? -d * Maths.InverseSqrt(a) : f * Maths.InverseSqrt(sqrF);
+                var contact = position + normal * radius;
+
+                collision = new()
+                {
+                    Contact = contact,
+                    Normal = normal,
+                };
+                return true;
+            }
+            return false;
+        }
+
+        public static bool Intersects(fix2 a, fix2 b, fix2 from, fix2 to, out Collision collision)
+        {
+            collision = default;
+
+            var ab = b - a;
+            var cd = to - from;
+
+            var d1 = Cross(cd, a - from);
+            var d2 = Cross(cd, b - from);
+            var d3 = Cross(ab, from - a);
+            var d4 = Cross(ab, to - a);
+
+            var normal = new fix2(-ab.y, ab.x);
+            if (fix2.Dot(normal, from - a) < fix.Zero)
+                normal = -normal;
+
+            var sqrLength = fix2.SqrLength(normal);
+            if (sqrLength <= fix.Zero)
+                return false;
+
+            collision.Normal = normal * Maths.InverseSqrt(sqrLength);
+
+            if (d1 == fix.Zero && OnSegment(from, to, a))
+            {
+                collision.Contact = a;
+                return true;
+            }
+
+            if (d2 == fix.Zero && OnSegment(from, to, b))
+            {
+                collision.Contact = b;
+                return true;
+            }
+
+            if (d3 == fix.Zero && OnSegment(a, b, from))
+            {
+                collision.Contact = from;
+                return true;
+            }
+
+            if (d4 == fix.Zero && OnSegment(a, b, to))
+            {
+                collision.Contact = to;
+                return true;
+            }
+
+            if (d1 * d2 > fix.Zero)
+                return false;
+
+            if (d3 * d4 > fix.Zero)
+                return false;
+
+            var denom = d2 - d1;
+
+            if (denom == 0)
+            {
+                if (d1 != fix.Zero)
+                    return false;
+
+                bool useX = Maths.Abs(b.x - a.x) > Maths.Abs(b.y - a.y);
+
+                fix a0 = useX ? a.x : a.y;
+                fix a1 = useX ? b.x : b.y;
+                fix c0 = useX ? from.x : from.y;
+                fix c1 = useX ? to.x : to.y;
+
+                if (a0 > a1)
+                    (a0, a1) = (a1, a0);
+                if (c0 > c1)
+                    (c0, c1) = (c1, c0);
+
+                if (a1 < c0 || c1 < a0)
+                    return false;
+
+                collision.Contact = from;
+                return true;
+            }
+
+            collision.Contact = (a * d2 - b * d1) / (denom);
+
+            return true;
+        }
+
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool OnSegment(fix2 a, fix2 b, fix2 p)
+        {
+            return
+                p.x >= Maths.Min(a.x, b.x) && p.x <= Maths.Max(a.x, b.x) &&
+                p.y >= Maths.Min(a.y, b.y) && p.y <= Maths.Max(a.y, b.y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static fix Cross(fix2 a, fix2 b) => a.x * b.y - a.y * b.x;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static fix2 Projection(fix2 point, fix2 start, fix2 end)
         {
             var ab = end - start;
-            var sqrLength = fix2.SqrLength(ab);
-            if (sqrLength <= fix.Zero)
+            var sqrLen = fix2.SqrLength(ab);
+
+            if (sqrLen <= fix.Zero)
                 return start;
 
-            var t = fix2.Dot(point - start, ab) / sqrLength;
-
-            if (t <= fix.Zero) return start;
-            if (t >= fix.One) return end;
+            var t = Maths.Clamp(fix2.Dot(point - start, ab) / sqrLen, 0, 1);
 
             return start + ab * t;
         }
