@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace DVG.Sheets
 {
@@ -13,10 +12,17 @@ namespace DVG.Sheets
     {
         private const string TsvFormat = "https://docs.google.com/spreadsheets/d/{0}/export?format=tsv&gid={1}";
         private const string CsvFormat = "https://docs.google.com/spreadsheets/d/{0}/export?format=csv&gid={1}";
-        private readonly HttpClient _client = new();
+        private readonly HttpClient _client;
+        private readonly string _tableId;
+        private readonly Sheet[] _sheets;
 
-        public string TableId { get; set; }
-        public Sheet[] Sheets { get; set; }
+        public SheetLoader(string tableId, Sheet[] sheets)
+        {
+            _tableId = tableId;
+            _sheets = (Sheet[])sheets.Clone();
+            _client = new();
+        }
+
 
         public Task<Dictionary<string, JsonArray>> LoadAsCsv() =>
             Load(CsvUrl, SheetParser.CsvToJsonObject);
@@ -24,12 +30,12 @@ namespace DVG.Sheets
         public Task<Dictionary<string, JsonArray>> LoadAsTsv() =>
             Load(TsvUrl, SheetParser.TsvToJsonObject);
 
-        private string CsvUrl(int id) => string.Format(CsvFormat, TableId, id);
-        private string TsvUrl(int id) => string.Format(TsvFormat, TableId, id);
+        private string CsvUrl(int id) => string.Format(CsvFormat, _tableId, id);
+        private string TsvUrl(int id) => string.Format(TsvFormat, _tableId, id);
 
         private async Task<Dictionary<string, JsonArray>> Load(Func<int, string> urlFormat, Func<string, int, JsonArray> parser)
         {
-            var loads = Array.ConvertAll(Sheets, s => Load(s, urlFormat));
+            var loads = Array.ConvertAll(_sheets, s => Load(s, urlFormat));
             var result = await Task.WhenAll(loads);
             try
             {
