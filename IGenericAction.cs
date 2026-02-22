@@ -20,8 +20,23 @@
         void Invoke<T>() where T : struct, K;
     }
 
+    public interface IGenericCaller
+    {
+        void ForEach<T>(ref T action) where T : IGenericAction;
+    }
+
+    public interface IGenericCaller<K>
+    {
+        void ForEach<T>(ref T action) where T : IGenericAction<K>;
+    }
+
     public interface IStructGenericCaller
     {
         void ForEach<T>(ref T action) where T : IStructGenericAction;
+    }
+
+    public interface IStructGenericCaller<K>
+    {
+        void ForEach<T>(ref T action) where T : IStructGenericAction<K>;
     }
 }

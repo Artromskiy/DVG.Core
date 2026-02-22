@@ -1,16 +1,12 @@
 ﻿using DVG.Components;
-using System.Runtime.Serialization;
 
 namespace DVG.Commands
 {
-    public struct Command<D> where D : ICommandData
+    public struct Command<D>
     {
         public ClientId ClientId;
         public int Tick;
         public D Data;
-
-        [IgnoreDataMember]
-        public readonly int CommandId => Data.CommandId;
 
         public Command(ClientId clientId, int tick, D data)
         {
