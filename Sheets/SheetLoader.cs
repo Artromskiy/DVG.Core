@@ -44,7 +44,7 @@ namespace DVG.Sheets
             }
             catch (Exception e)
             {
-                Trace.TraceError($"Failed to parse sheet: {e.Message}");
+                Trace.TraceError($"Failed to parse sheet: {e.Message}\n{e.StackTrace}");
             }
             return null;
         }
