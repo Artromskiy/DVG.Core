@@ -2,15 +2,14 @@
 
 namespace DVG.Components
 {
+    [InlineArray(Constants.HistoryTicks)]
     public readonly struct History<T> where T : struct
     {
-        private readonly T?[] _data;
+        private readonly InlineArray256<T?> _data;
         public ref T? this[int wrapTick]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ref _data[wrapTick];
+            get => ref _data.Span[wrapTick];
         }
-
-        public History(int length) => _data = new T?[length];
     }
 }
