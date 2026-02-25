@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DVG.Core
+namespace DVG
 {
     public static class Hex
     {

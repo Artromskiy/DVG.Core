@@ -1,7 +1,4 @@
-﻿using System;
-
-namespace DVG.Components
+﻿namespace DVG.Components
 {
-    [Obsolete]
     public struct Temp { }
 }
