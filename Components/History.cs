@@ -10,5 +10,10 @@ namespace DVG.Components
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref _data[wrapTick];
         }
+
+        public History(int length)
+        {
+            _data = new T?[length];
+        }
     }
 }

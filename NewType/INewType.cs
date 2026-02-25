@@ -2,7 +2,7 @@
 {
     public interface INewType { }
 
-    public interface INewType<T>
+    public interface INewType<T> : INewType
     {
         T Value { get; set; }
     }
