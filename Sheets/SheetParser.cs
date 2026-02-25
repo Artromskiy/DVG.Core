@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -8,6 +9,8 @@ namespace DVG.Sheets
 {
     public static class SheetParser
     {
+        private const char Split = '/';
+        private const string Insertion = "{0}";
         private static readonly JsonSerializerOptions _options = new() { WriteIndented = true };
         public static string TsvToJson(string tsv, int headerRows) =>
             TsvToJsonObject(tsv, headerRows).ToJsonString(_options);
@@ -39,7 +42,11 @@ namespace DVG.Sheets
                         continue;
 
                     var path = BuildPath(table, c, headerRows);
-                    Insert(obj, path, value);
+                    var replace = path.IndexOf(Insertion);
+                    path.RemoveAt(replace);
+                    path.InsertRange(replace, value.Split(Split));
+
+                    Insert(obj, path);
                     hasData = true;
                 }
 
@@ -97,7 +104,7 @@ namespace DVG.Sheets
                 }
                 else
                 {
-                    path.AddRange(table[r, c].Split('/').Reverse());
+                    path.AddRange(table[r, c].Split(Split).Reverse());
 
                     startRow = r - 1;
 
@@ -107,82 +114,29 @@ namespace DVG.Sheets
             }
 
             path.Reverse();
+
+            if (!path.Contains(Insertion))
+                path.Add(Insertion);
+
             return path;
         }
 
-        private static void Insert(JsonObject root, List<string> path, string rawValue)
+        private static void Insert(JsonObject root, List<string> path)
         {
             JsonObject current = root;
-
-            for (int i = 0; i < path.Count; i++)
+            for (int i = 0; i < path.Count - 2; i++)
             {
-                var token = path[i];
-
-                bool isArray = token.Contains("[]");
-                bool isObject = token.Contains("{}");
-
-                var key = token.Replace("[]", "").Replace("{}", "");
-                bool isLast = i == path.Count - 1;
-
-                if (isArray)
-                {
-                    if (!current.TryGetPropertyValue(key, out var arrNode))
-                    {
-                        arrNode = new JsonArray();
-                        current[key] = arrNode;
-                    }
-
-                    var array = arrNode.AsArray();
-
-                    if (isLast)
-                    {
-                        if (isObject)
-                        {
-                            var obj = new JsonObject
-                            {
-                                [rawValue] = new JsonObject()
-                            };
-                            array.Add(obj);
-                        }
-                        else
-                        {
-                            array.Add(ParseValue(rawValue));
-                        }
-                        return;
-                    }
-
-                    var element = new JsonObject();
-                    array.Add(element);
-                    current = element;
-                    continue;
-                }
-
-                if (isObject && isLast)
-                {
-                    if (!current.TryGetPropertyValue(key, out var map))
-                    {
-                        map = new JsonObject();
-                        current[key] = map;
-                    }
-
-                    map.AsObject()[rawValue] = new JsonObject();
-                    return;
-                }
-
-                if (isLast)
-                {
-                    current[key] = ParseValue(rawValue);
-                    return;
-                }
-
+                var key = path[i];
                 if (!current.TryGetPropertyValue(key, out var next))
                 {
                     next = new JsonObject();
                     current[key] = next;
                 }
-
                 current = next.AsObject();
             }
+
+            current[path[^2]] = ParseValue(path[^1]);
+            return;
         }
 
 
