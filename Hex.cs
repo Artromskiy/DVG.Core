@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DVG
 {
@@ -54,30 +55,30 @@ namespace DVG
         public static ReadOnlySpan<fix2> Normals => _normals;
         public static ReadOnlySpan<int2> AxialNear => _axialNear;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int2 AxialRound(fix q, fix r)
         {
-            fix x = q;
-            fix z = r;
-            fix y = -x - z;
+            fix y = -q - r;
 
-            int rx = (int)Maths.Round(x);
+            int rx = (int)Maths.Round(q);
+            int rz = (int)Maths.Round(r);
             int ry = (int)Maths.Round(y);
-            int rz = (int)Maths.Round(z);
 
-            fix dx = Maths.Abs(rx - x);
+            fix dx = Maths.Abs(rx - q);
+            fix dz = Maths.Abs(rz - r);
             fix dy = Maths.Abs(ry - y);
-            fix dz = Maths.Abs(rz - z);
 
             if (dx > dy && dx > dz)
                 rx = -ry - rz;
-            else if (dy > dz)
-                ry = -rx - rz;
-            else
+            else if (dy <= dz)
                 rz = -rx - ry;
+            //else
+            //    ry = -rx - rz;
 
             return new int2(rx, rz);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int2 WorldToAxial(fix2 pos)
         {
             fix q = pos.x * _twoOverThreeOverOuterRadius;
@@ -85,6 +86,7 @@ namespace DVG
             return AxialRound(q, r);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int3 WorldToAxial(fix3 pos)
         {
             fix q = pos.x * _twoOverThreeOverOuterRadius;
@@ -94,6 +96,7 @@ namespace DVG
             return axial;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static fix2 AxialToWorld(int2 axial)
         {
             int q = axial.x;
@@ -104,6 +107,7 @@ namespace DVG
             return new fix2(x, y);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int2 OffsetToAxial(int2 offset)
         {
             var parity = offset.x & 1;
@@ -112,6 +116,7 @@ namespace DVG
             return new int2(q, r);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int2 AxialToOffset(int2 axial)
         {
             var parity = axial.x & 1;
@@ -120,8 +125,11 @@ namespace DVG
             return new int2(col, row);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static fix AxialToWorldY(int y) => (fix)y * _hexHeight;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int WorldToAxialY(fix y) => (int)Maths.Floor(y / _hexHeight);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static fix3 AxialToWorld(int3 axial)
         {
             var pos = AxialToWorld(axial.xz).x_y;
