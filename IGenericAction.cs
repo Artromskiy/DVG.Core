@@ -22,7 +22,7 @@
 
     public interface IGenericCaller
     {
-        void ForEach<T>(ref T action) where T : IGenericAction;
+        void Call<T>(ref T action) where T : IGenericAction;
     }
 
     public interface IGenericCaller<K>
