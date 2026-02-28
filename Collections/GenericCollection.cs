@@ -1,66 +1,43 @@
 ﻿using DVG.Core.Collections;
 using System;
-using System.Runtime.CompilerServices;
 
 namespace DVG.Collections
 {
     public sealed class GenericCollection : IDisposable
     {
-        private static int _nextTypeId;
-
         private int _usedEntries;
-        private int _usedBytes;
-        private byte[] _buffer;
 
         private readonly Lookup<Entry> _entries = new();
         private readonly Lookup<int> _typeToEntry = new();
 
-        public GenericCollection(int capacity = 256)
-        {
-            _buffer = new byte[capacity];
-        }
-
         private int GetOrCreateEntryId<T>()
         {
-            var typeId = GenericTypeId<T>.TypeId;
+            var typeId = Entry<T>.TypeId;
             if (!_typeToEntry.TryGetValue(typeId, out var entryId))
-                _typeToEntry[typeId] = entryId = _usedEntries++;
+            {
+                entryId = _usedEntries++;
+                _typeToEntry[typeId] = entryId;
+            }
+
             return entryId;
         }
 
         private bool TryGetEntryId<T>(out int entryId)
         {
-            return _typeToEntry.TryGetValue(GenericTypeId<T>.TypeId, out entryId);
+            return _typeToEntry.TryGetValue(Entry<T>.TypeId, out entryId);
         }
 
         public void Add<T>(T value)
         {
             int id = GetOrCreateEntryId<T>();
-            ref var entry = ref _entries.GetOrAddRef(id);
 
-            if (!RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-            {
-                if (!entry.Exists)
-                {
-                    int size = Unsafe.SizeOf<T>();
-                    EnsureCapacity(_usedBytes + size);
+            if (!_entries.TryGetValue(id, out var entry))
+                _entries[id] = entry = new Entry<T>();
 
-                    entry.Offset = _usedBytes;
-                    _usedBytes += size;
-                }
-
-                ref byte dst = ref _buffer[entry.Offset];
-                Unsafe.WriteUnaligned(ref dst, value);
-            }
-            else
-            {
-                entry.Reference = value;
-            }
-
-            entry.Exists = true;
+            var typed = (Entry<T>)entry;
+            typed.Value = value;
+            typed.Exists = true;
         }
-
-        // ========================= GET =========================
 
         public bool TryGet<T>(out T value)
         {
@@ -72,16 +49,10 @@ namespace DVG.Collections
                 return false;
             }
 
-            if (!RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-            {
-                ref byte src = ref _buffer[entry.Offset];
-                value = Unsafe.ReadUnaligned<T>(ref src);
-            }
-            else
-            {
-                value = (T)entry.Reference!;
-            }
+            if (entry is not Entry<T> typed)
+                throw new InvalidOperationException();
 
+            value = typed.Value;
             return true;
         }
 
@@ -96,52 +67,33 @@ namespace DVG.Collections
         {
             if (TryGetEntryId<T>(out var id) &&
                 _entries.TryGetValue(id, out var entry))
-            {
                 entry.Exists = false;
-                entry.Reference = null;
-                _entries[id] = entry;
-            }
         }
 
         public void Clear()
         {
             for (int i = 0; i < _usedEntries; i++)
-            {
-                if (!_entries.TryGetValue(i, out var e))
-                    continue;
-
-                e.Exists = false;
-                e.Reference = null;
-                _entries[i] = e;
-            }
+                if (_entries.TryGetValue(i, out var entry))
+                    entry.Exists = false;
         }
 
         public void Dispose()
         {
             _usedEntries = 0;
-            _usedBytes = 0;
             _entries.Clear();
             _typeToEntry.Clear();
         }
 
-        private void EnsureCapacity(int required)
+        private abstract class Entry
         {
-            if (required <= _buffer.Length)
-                return;
-
-            Array.Resize(ref _buffer, Math.Max(required, _buffer.Length * 2));
-        }
-
-        private struct Entry
-        {
-            public object? Reference;
-            public int Offset;
+            public static int LastTypeId;
             public bool Exists;
         }
 
-        private static class GenericTypeId<T>
+        private sealed class Entry<T> : Entry
         {
-            public static readonly int TypeId = _nextTypeId++;
+            public static readonly int TypeId = LastTypeId++;
+            public T Value = default!;
         }
     }
 }
