@@ -16,7 +16,7 @@ namespace DVG.Sheets
 
             foreach (var node in array)
             {
-                if (!node.AsObject().TryGetPropertyValue(keyProperty, out var keyNode))
+                if (!node!.AsObject().TryGetPropertyValue(keyProperty, out var keyNode))
                     throw new InvalidOperationException($"Property '{keyProperty}' not found in element.");
 
                 var key = keyNode?.ToString();
@@ -33,7 +33,7 @@ namespace DVG.Sheets
         }
         public static JsonObject ToSingle(this JsonArray array)
         {
-            return array.First().DeepClone().AsObject();
+            return array.First()!.DeepClone().AsObject();
         }
     }
 }
