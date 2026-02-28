@@ -54,15 +54,13 @@ namespace DVG.Components
 
         public void Rollback(int toTick)
         {
-            for (int i = 0; i <= Constants.MaxHistoryTicks; i++)
+            for (int i = 0; i < Constants.MaxHistoryTicks; i++)
             {
-                int index = Constants.WrapTick(i);
+                if (_ticks[i] <= toTick)
+                    continue;
 
-                if (_ticks[index] > toTick)
-                {
-                    _ticks[index] = 0;
-                    _data[index] = null;
-                }
+                _ticks[i] = 0;
+                _data[i] = null;
             }
         }
     }
