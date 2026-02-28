@@ -1,7 +1,15 @@
 ﻿using System;
 
-namespace DVG.Core.Commands.Attributes
+namespace DVG.Commands.Attributes
 {
     [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    public class CommandAttribute : Attribute { }
+    public class CommandAttribute : Attribute
+    {
+        public readonly bool Predicted;
+
+        public CommandAttribute(bool predicted)
+        {
+            Predicted = predicted;
+        }
+    }
 }
