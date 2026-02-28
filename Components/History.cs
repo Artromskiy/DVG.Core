@@ -18,7 +18,7 @@ namespace DVG.Components
             get
             {
                 int searchTick = tick;
-                int limit = tick - Constants.HistoryTicks;
+                int limit = tick - Constants.MaxHistoryTicks;
                 int newest = -1;
 
                 while (searchTick >= limit)
@@ -54,7 +54,7 @@ namespace DVG.Components
 
         public void Rollback(int toTick)
         {
-            for (int i = 0; i <= Constants.HistoryTicks; i++)
+            for (int i = 0; i <= Constants.MaxHistoryTicks; i++)
             {
                 int index = Constants.WrapTick(i);
 
