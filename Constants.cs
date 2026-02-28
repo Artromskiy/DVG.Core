@@ -3,7 +3,7 @@
     public static class Constants
     {
         public const int TicksPerSecond = 16;
-        public const int HistoryTicks = TicksPerSecond * 16; // 16 seconds
+        public const int HistoryTicks = TicksPerSecond * 8; // 16 seconds
 
         public static readonly fix TickTime = fix.One / TicksPerSecond;
 
