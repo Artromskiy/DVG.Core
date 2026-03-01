@@ -5,6 +5,6 @@ namespace DVG.Components
     [Component(true)]
     public struct Disposing
     {
-        public int TicksPassed;
+        public int StartTick;
     }
 }
