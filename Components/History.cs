@@ -28,7 +28,10 @@ namespace DVG.Components
 
             _mask = capacity - 1;
             _head = 0;
-            _count = 0;
+            _count = 1;
+
+            _ticks[0] = int.MinValue;
+            _values[0] = null;
         }
 
         public T? this[int tick]
@@ -64,7 +67,7 @@ namespace DVG.Components
         {
             int count = _count;
             if (count == 0)
-                throw new IndexOutOfRangeException($"History does not contain tick {tick}, probably too far away in time");
+                throw new IndexOutOfRangeException($"History is empty and does not contain tick {tick}");
 
             for (int i = count - 1; i >= 0; i--)
             {
@@ -73,7 +76,7 @@ namespace DVG.Components
                     return _values[idx];
             }
 
-            throw new IndexOutOfRangeException($"History does not contain tick {tick}, probably too far away in time");
+            throw new IndexOutOfRangeException($"History does not contain tick {tick}. Last found tick {GetTick(0)}");
         }
 
 
