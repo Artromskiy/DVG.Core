@@ -3,8 +3,5 @@
 namespace DVG.Components
 {
     [Component(true)]
-    public struct Disposing
-    {
-        public int StartTick;
-    }
+    public struct Alive { }
 }
