@@ -17,6 +17,8 @@ namespace DVG.Components
 
         [IgnoreDataMember]
         public readonly int Capacity => _values.Length;
+        [IgnoreDataMember]
+        public readonly int Count => _count;
 
         public History(int capacity)
         {
