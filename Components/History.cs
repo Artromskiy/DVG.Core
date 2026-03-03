@@ -46,7 +46,7 @@ namespace DVG.Components
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Set(int tick, T? value)
+        private void Set(int tick, T? value)
         {
             Debug.Assert(RollbackAssertion(tick), "Rollback called implicitly");
 
@@ -65,7 +65,7 @@ namespace DVG.Components
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly T? Get(int tick)
+        private readonly T? Get(int tick)
         {
             int count = _count;
             if (count == 0)
@@ -100,7 +100,7 @@ namespace DVG.Components
 
         private bool RollbackAssertion(int toTick)
         {
-            if (_count == 0 && toTick < GetTick(_count - 1))
+            if (_count != 0 && toTick < GetTick(_count - 1))
             {
                 Rollback(toTick);
                 return false;
