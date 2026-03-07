@@ -6,11 +6,9 @@
         public const int MaxHistoryTicks = TicksPerSecond * 8; // 8 seconds
         public const int ValidTicksCount = TicksPerSecond * 1;
 
-        public static readonly fix TickTime = fix.One / TicksPerSecond;
+        public const int TickDurationMs = 1000 / TicksPerSecond;
+        public const int MaxHistoryDurationMs = MaxHistoryTicks * 1000 / TicksPerSecond;
 
-        public static int WrapTick(int tick)
-        {
-            return tick & MaxHistoryTicks - 1;
-        }
+        public static readonly fix TickTime = fix.One / TicksPerSecond;
     }
 }
