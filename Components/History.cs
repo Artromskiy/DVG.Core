@@ -71,14 +71,22 @@ namespace DVG.Components
             if (count == 0)
                 throw new IndexOutOfRangeException($"History is empty and does not contain tick {tick}");
 
-            for (int i = count - 1; i >= 0; i--)
-            {
-                int idx = Index(i);
-                if (_ticks[idx] <= tick)
-                    return _values[idx];
-            }
+            int lastIdx = Index(count - 1);
+            if (_ticks[lastIdx] <= tick)
+                return _values[lastIdx];
 
-            throw new IndexOutOfRangeException($"History does not contain tick {tick}. Last found tick {GetTick(0)}");
+            var head = _head;
+            int oldestTick = _ticks[head];
+
+            if (tick < oldestTick)
+                throw new IndexOutOfRangeException($"History does not contain tick {tick}. Last found tick {_ticks[lastIdx]}");
+
+            if (tick == oldestTick)
+                return _values[head];
+
+            int idx = BinarySearch(tick, count);
+
+            return _values[idx];
         }
 
 
@@ -106,6 +114,29 @@ namespace DVG.Components
                 return false;
             }
             return true;
+        }
+
+        private readonly int BinarySearch(int tick, int count)
+        {
+            int lo = 0;
+            int hi = count - 1;
+
+            while (lo <= hi)
+            {
+                int mid = (lo + hi) >> 1;
+                int idx = Index(mid);
+                int midTick = _ticks[idx];
+
+                if (midTick == tick)
+                    return idx;
+
+                if (midTick < tick)
+                    lo = mid + 1;
+                else
+                    hi = mid - 1;
+            }
+
+            return Index(hi);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
