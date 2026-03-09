@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
 namespace DVG.Components
 {
-    public struct History<T> where T : struct
+    public struct History<T> : IDisposable where T : struct
     {
         public readonly T?[] _values;
         private readonly int[] _ticks;
@@ -16,7 +17,7 @@ namespace DVG.Components
         private int _count;
 
         [IgnoreDataMember]
-        public readonly int Capacity => _values.Length;
+        public int Capacity { get; private set; }
         [IgnoreDataMember]
         public readonly int Count => _count;
 
@@ -25,10 +26,13 @@ namespace DVG.Components
             if (!((capacity & (capacity - 1)) == 0))
                 throw new ArgumentException("History size should be power of two");
 
-            _values = new T?[capacity];
-            _ticks = new int[capacity];
+            Capacity = capacity;
+            _values = ArrayPool<T?>.Shared.Rent(Capacity);
+            _ticks = ArrayPool<int>.Shared.Rent(Capacity);
+            Array.Clear(_values, 0, Capacity);
+            Array.Clear(_ticks, 0, Capacity);
 
-            _mask = capacity - 1;
+            _mask = Capacity - 1;
             _head = 0;
             _count = 1;
 
@@ -147,5 +151,11 @@ namespace DVG.Components
         private readonly int Inc(int value) => (value + 1) & _mask;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private readonly int GetTick(int tick) => _ticks[Index(tick)];
+
+        public readonly void Dispose()
+        {
+            ArrayPool<T?>.Shared.Return(_values, true);
+            ArrayPool<int>.Shared.Return(_ticks, true);
+        }
     }
 }
