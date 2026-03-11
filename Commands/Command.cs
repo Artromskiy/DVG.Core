@@ -18,4 +18,9 @@ namespace DVG.Commands
         public readonly Command<D> WithClientId(ClientId clientId) => new(clientId, Tick, Data);
         public readonly Command<D> WithTick(int tick) => new(ClientId, tick, Data);
     }
+
+    public struct Command
+    {
+        public static Command<T> Create<T>(T data) => new(-1, -1, data);
+    }
 }
