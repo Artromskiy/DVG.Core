@@ -1,36 +1,46 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 namespace DVG.Components
 {
     public struct History<T> : IDisposable where T : struct
     {
-        public readonly T?[] _values;
-        private readonly int[] _ticks;
+        private T?[] _values;
+        private int[] _ticks;
 
-        private readonly int _mask;
+        private int _mask;
 
         private int _head;
         private int _count;
+
+        private readonly int _maxCapacity;
 
         [IgnoreDataMember]
         public int Capacity { get; private set; }
         [IgnoreDataMember]
         public readonly int Count => _count;
 
-        public History(int capacity)
+        public History(int initialCapacity, int maxCapacity)
         {
-            if (!((capacity & (capacity - 1)) == 0))
-                throw new ArgumentException("History size should be power of two");
+            if (!((maxCapacity & (maxCapacity - 1)) == 0))
+                throw new ArgumentException("History maxCapacity should be power of two");
 
-            Capacity = capacity;
+            if (!((initialCapacity & (initialCapacity - 1)) == 0))
+                throw new ArgumentException("History initialCapacity should be power of two");
+
+            if (initialCapacity > maxCapacity)
+                throw new ArgumentException("History initialCapacity should be less or equal to maxCapacity");
+
+            _maxCapacity = maxCapacity;
+            Capacity = initialCapacity;
+
             _values = ArrayPool<T?>.Shared.Rent(Capacity);
             _ticks = ArrayPool<int>.Shared.Rent(Capacity);
-            Array.Clear(_values, 0, Capacity);
-            Array.Clear(_ticks, 0, Capacity);
 
             _mask = Capacity - 1;
             _head = 0;
@@ -54,11 +64,19 @@ namespace DVG.Components
         {
             Debug.Assert(RollbackAssertion(tick), "Rollback called implicitly");
 
-            if (_count == Capacity)
+            if (_count > 0)
             {
-                _head = Inc(_head);
-                _count--;
+                int lastIdx = Index(_count - 1);
+                if (_ticks[lastIdx] == tick)
+                {
+                    _values[lastIdx] = value;
+                    return;
+                }
+                if (NullableMarshalEquilityComparer.Default.EqualsRef(ref _values[lastIdx], ref value))
+                    return;
             }
+
+            EnsureCapacity();
 
             int index = TailIndex();
 
@@ -110,6 +128,15 @@ namespace DVG.Components
                 _head = 0;
         }
 
+        public readonly T? GetLast(out int tick)
+        {
+            if (_count == 0)
+                throw new InvalidOperationException("History is empty");
+            var idx = Index(_count - 1);
+            tick = _ticks[idx];
+            return _values[idx];
+        }
+
         private bool RollbackAssertion(int toTick)
         {
             if (_count != 0 && toTick < GetTick(_count - 1))
@@ -143,6 +170,48 @@ namespace DVG.Components
             return Index(hi);
         }
 
+        private void EnsureCapacity()
+        {
+            if (_count < Capacity)
+                return;
+
+            if (Capacity >= _maxCapacity)
+            {
+                _head = Inc(_head);
+                _count--;
+                return;
+            }
+
+            int newCapacity = Capacity << 1;
+            if (newCapacity > _maxCapacity)
+                newCapacity = _maxCapacity;
+
+            Resize(newCapacity);
+        }
+
+        private void Resize(int newCapacity)
+        {
+            var newValues = ArrayPool<T?>.Shared.Rent(newCapacity);
+            var newTicks = ArrayPool<int>.Shared.Rent(newCapacity);
+
+            for (int i = 0; i < _count; i++)
+            {
+                int src = Index(i);
+                newValues[i] = _values[src];
+                newTicks[i] = _ticks[src];
+            }
+
+            ArrayPool<T?>.Shared.Return(_values, true);
+            ArrayPool<int>.Shared.Return(_ticks, true);
+
+            _values = newValues;
+            _ticks = newTicks;
+
+            Capacity = newCapacity;
+            _head = 0;
+            _mask = newCapacity - 1;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private readonly int TailIndex() => (_head + _count) & _mask;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -156,6 +225,39 @@ namespace DVG.Components
         {
             ArrayPool<T?>.Shared.Return(_values, true);
             ArrayPool<int>.Shared.Return(_ticks, true);
+        }
+
+
+        private class NullableMarshalEquilityComparer : IEqualityComparer<T?>
+        {
+            private static readonly int _size = Marshal.SizeOf<T>();
+            public static NullableMarshalEquilityComparer Default { get; } = new();
+
+
+            public bool EqualsRef(ref T? x, ref T? y)
+            {
+                ref var xRef = ref Unsafe.As<T?, NullableReadable>(ref x);
+                ref var yRef = ref Unsafe.As<T?, NullableReadable>(ref y);
+
+                if (xRef.hasValue != yRef.hasValue)
+                    return false;
+
+                if (!xRef.hasValue)
+                    return true;
+
+                var xBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<T, byte>(ref xRef.value), _size);
+                var yBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<T, byte>(ref yRef.value), _size);
+                return xBytes.SequenceEqual(yBytes);
+            }
+
+            public bool Equals(T? x, T? y) => EqualsRef(ref x, ref y);
+            public int GetHashCode(T? obj) => throw new NotImplementedException();
+        }
+
+        private struct NullableReadable
+        {
+            public readonly bool hasValue;
+            public T value;
         }
     }
 }
