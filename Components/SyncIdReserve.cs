@@ -1,12 +1,12 @@
-﻿using DVG.Components.Attributes;
+﻿using KibiHex.Components.Attributes;
 
-namespace DVG.Components
+namespace KibiHex.Components
 {
-    [Component(true)]
-    public struct SyncIdReserve
-    {
-        public int First;
-        public int Count;
-        public int Current;
-    }
+	[Component(true)]
+	public struct SyncIdReserve
+	{
+		public int First;
+		public int Count;
+		public int Current;
+	}
 }

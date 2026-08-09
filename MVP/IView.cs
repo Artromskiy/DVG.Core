@@ -1,10 +1,10 @@
-﻿namespace DVG.Core
+﻿namespace KibiHex.Core
 {
-    public interface IView { }
+	public interface IView { }
 
-    public interface IView<VM> : IView
-        where VM : IViewModel
-    {
-        VM ViewModel { get; set; }
-    }
+	public interface IView<VM> : IView
+		where VM : IViewModel
+	{
+		VM ViewModel { get; set; }
+	}
 }

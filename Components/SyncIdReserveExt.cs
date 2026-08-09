@@ -1,18 +1,18 @@
 ﻿using System.Diagnostics;
 
-namespace DVG.Components
+namespace KibiHex.Components
 {
-    public static class SyncIdReserveExt
-    {
-        public static int RemainingCount(this SyncIdReserve syncIdReserve)
-        {
-            return syncIdReserve.First + syncIdReserve.Count - syncIdReserve.Current;
-        }
+	public static class SyncIdReserveExt
+	{
+		public static int RemainingCount(this SyncIdReserve syncIdReserve)
+		{
+			return syncIdReserve.First + syncIdReserve.Count - syncIdReserve.Current;
+		}
 
-        public static SyncId GetNext(this ref SyncIdReserve syncIdReserve)
-        {
-            Debug.Assert(syncIdReserve.Current < syncIdReserve.First + syncIdReserve.Count);
-            return syncIdReserve.Current++;
-        }
-    }
+		public static SyncId GetNext(this ref SyncIdReserve syncIdReserve)
+		{
+			Debug.Assert(syncIdReserve.Current < syncIdReserve.First + syncIdReserve.Count);
+			return syncIdReserve.Current++;
+		}
+	}
 }

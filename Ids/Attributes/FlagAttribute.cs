@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace DVG.Core.Ids.Attributes
+namespace KibiHex.Core.Ids.Attributes
 {
 
-    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
-    public class FlagAttribute : Attribute { }
+	[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
+	public class FlagAttribute : Attribute { }
 }

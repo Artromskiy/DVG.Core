@@ -1,15 +1,15 @@
 ﻿using System;
 
-namespace DVG.Commands.Attributes
+namespace KibiHex.Commands.Attributes
 {
-    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    public class CommandAttribute : Attribute
-    {
-        public readonly bool Predicted;
+	[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+	public class CommandAttribute : Attribute
+	{
+		public readonly bool Predicted;
 
-        public CommandAttribute(bool predicted)
-        {
-            Predicted = predicted;
-        }
-    }
+		public CommandAttribute(bool predicted)
+		{
+			Predicted = predicted;
+		}
+	}
 }

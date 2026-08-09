@@ -1,26 +1,26 @@
-﻿using DVG.Components;
+﻿using KibiHex.Components;
 
-namespace DVG.Commands
+namespace KibiHex.Commands
 {
-    public struct Command<D>
-    {
-        public ClientId ClientId;
-        public int Tick;
-        public D Data;
+	public struct Command<D>
+	{
+		public ClientId ClientId;
+		public int Tick;
+		public D Data;
 
-        public Command(ClientId clientId, int tick, D data)
-        {
-            ClientId = clientId;
-            Tick = tick;
-            Data = data;
-        }
+		public Command(ClientId clientId, int tick, D data)
+		{
+			ClientId = clientId;
+			Tick = tick;
+			Data = data;
+		}
 
-        public readonly Command<D> WithClientId(ClientId clientId) => new(clientId, Tick, Data);
-        public readonly Command<D> WithTick(int tick) => new(ClientId, tick, Data);
-    }
+		public readonly Command<D> WithClientId(ClientId clientId) => new(clientId, Tick, Data);
+		public readonly Command<D> WithTick(int tick) => new(ClientId, tick, Data);
+	}
 
-    public struct Command
-    {
-        public static Command<T> Create<T>(T data) => new(-1, -1, data);
-    }
+	public struct Command
+	{
+		public static Command<T> Create<T>(T data) => new(-1, -1, data);
+	}
 }

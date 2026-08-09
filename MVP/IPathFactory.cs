@@ -1,4 +1,4 @@
-﻿namespace DVG.Core
+﻿namespace KibiHex.Core
 {
-    public interface IPathFactory<T> : IFactory<T, string> { }
+	public interface IPathFactory<T> : IFactory<T, string> { }
 }

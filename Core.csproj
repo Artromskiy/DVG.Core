@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <RootNamespace>DVG</RootNamespace>
+    <RootNamespace>KibiHex</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GLSH\Core\GLSH.csproj" />
+    <ProjectReference Include="..\Maths\KibiHex.Maths.csproj" />
   </ItemGroup>
 
 </Project>

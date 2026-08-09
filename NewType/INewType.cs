@@ -1,9 +1,9 @@
-﻿namespace DVG.NewType
+﻿namespace KibiHex.NewType
 {
-    public interface INewType { }
+	public interface INewType { }
 
-    public interface INewType<T> : INewType
-    {
-        T Value { get; set; }
-    }
+	public interface INewType<T> : INewType
+	{
+		T Value { get; set; }
+	}
 }

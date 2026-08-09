@@ -1,17 +1,17 @@
-﻿using DVG.Components.Attributes;
-using DVG.NewType;
+﻿using KibiHex.Components.Attributes;
+using KibiHex.NewType;
 
-namespace DVG.Components
+namespace KibiHex.Components
 {
-    [Component(true)]
-    public struct ClientId : INewType<int>
-    {
-        public int Value;
+	[Component(true)]
+	public struct ClientId : INewType<int>
+	{
+		public int Value;
 
-        int INewType<int>.Value { readonly get => Value; set => Value = value; }
+		int INewType<int>.Value { readonly get => Value; set => Value = value; }
 
-        public static implicit operator ClientId(int value) => new() { Value = value };
+		public static implicit operator ClientId(int value) => new() { Value = value };
 
-        public static implicit operator int(ClientId newType) => newType.Value;
-    }
+		public static implicit operator int(ClientId newType) => newType.Value;
+	}
 }

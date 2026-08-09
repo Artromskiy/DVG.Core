@@ -1,7 +1,7 @@
-﻿using DVG.Components.Attributes;
+﻿using KibiHex.Components.Attributes;
 
-namespace DVG.Components
+namespace KibiHex.Components
 {
-    [Component(true)]
-    public struct Alive { }
+	[Component(true)]
+	public struct Alive { }
 }
