@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-namespace KibiHex.Components
+namespace DVG.Components
 {
 	public struct History<T> : IDisposable where T : struct
 	{

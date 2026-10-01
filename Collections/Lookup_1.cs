@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace KibiHex.Core.Collections
+namespace DVG.Core.Collections
 {
 	public sealed class Lookup
 	{

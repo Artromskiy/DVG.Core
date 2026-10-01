@@ -1,4 +1,4 @@
-﻿namespace KibiHex.Components
+﻿namespace DVG.Components
 {
 	public struct Temp { }
 }

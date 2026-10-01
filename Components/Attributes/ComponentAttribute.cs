@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KibiHex.Components.Attributes
+namespace DVG.Components.Attributes
 {
 	[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
 	public class ComponentAttribute : Attribute

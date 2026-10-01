@@ -1,4 +1,4 @@
-namespace KibiHex.Ids
+namespace DVG.Ids
 {
 	public interface IId
 	{

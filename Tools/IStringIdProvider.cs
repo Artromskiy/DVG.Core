@@ -1,9 +1,9 @@
-﻿using KibiHex.Ids;
+﻿using DVG.Ids;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KibiHex.Core.Tools
+namespace DVG.Core.Tools
 {
 	public interface IStringIdProvider
 	{

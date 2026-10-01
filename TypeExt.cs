@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace KibiHex
+namespace DVG
 {
 	public static class TypeExt
 	{

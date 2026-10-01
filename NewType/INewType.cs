@@ -1,4 +1,4 @@
-﻿namespace KibiHex.NewType
+﻿namespace DVG.NewType
 {
 	public interface INewType { }
 

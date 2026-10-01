@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text.Json.Nodes;
 
-namespace KibiHex.Sheets
+namespace DVG.Sheets
 {
 	public static class JsonExt
 	{

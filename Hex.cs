@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Delta;
+using System;
 using System.Runtime.CompilerServices;
 
-namespace KibiHex
+namespace DVG
 {
 	public static class Hex
 	{

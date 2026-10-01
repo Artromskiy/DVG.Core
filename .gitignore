@@ -56,3 +56,5 @@ nunit-*.xml
 # Unity
 *.meta
 *.asmdef
+!Core.asmdef
+!Core.asmdef.meta

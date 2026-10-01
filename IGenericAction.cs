@@ -1,4 +1,4 @@
-﻿namespace KibiHex
+﻿namespace DVG
 {
 	public interface IGenericAction<K>
 	{

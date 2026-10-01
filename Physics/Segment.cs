@@ -1,4 +1,5 @@
-﻿namespace KibiHex.Physics
+﻿using Delta;
+namespace DVG.Physics
 {
 	public readonly struct Segment
 	{

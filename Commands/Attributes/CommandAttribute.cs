@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KibiHex.Commands.Attributes
+namespace DVG.Commands.Attributes
 {
 	[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
 	public class CommandAttribute : Attribute

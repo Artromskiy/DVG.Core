@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KibiHex.Core.Ids.Attributes
+namespace DVG.Core.Ids.Attributes
 {
 
 	[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]

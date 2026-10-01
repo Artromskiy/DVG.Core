@@ -1,4 +1,5 @@
-﻿namespace KibiHex.Components
+﻿using Delta;
+namespace DVG.Components
 {
 	public static class RandomSeedExt
 	{

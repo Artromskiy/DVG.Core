@@ -1,7 +1,7 @@
-﻿using KibiHex.Components.Attributes;
-using KibiHex.NewType;
+﻿using DVG.Components.Attributes;
+using DVG.NewType;
 
-namespace KibiHex.Components
+namespace DVG.Components
 {
 	[Component(true)]
 	public struct SyncId : INewType<int>

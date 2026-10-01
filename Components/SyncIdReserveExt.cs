@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace KibiHex.Components
+namespace DVG.Components
 {
 	public static class SyncIdReserveExt
 	{

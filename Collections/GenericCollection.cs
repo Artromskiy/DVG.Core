@@ -1,7 +1,7 @@
-﻿using KibiHex.Core.Collections;
+﻿using DVG.Core.Collections;
 using System;
 
-namespace KibiHex.Collections
+namespace DVG.Collections
 {
 	public sealed class GenericCollection : IDisposable
 	{

@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace KibiHex.Sheets
+namespace DVG.Sheets
 {
 	public class SheetLoader
 	{

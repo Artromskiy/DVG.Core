@@ -1,4 +1,4 @@
-﻿namespace KibiHex.Core
+﻿namespace DVG.Core
 {
 	public interface IView { }
 

@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Delta;
+using System;
 
-namespace KibiHex.Physics
+namespace DVG.Physics
 {
 	public static class Solvers
 	{

@@ -1,4 +1,4 @@
-﻿namespace KibiHex.Collections
+﻿namespace DVG.Collections
 {
 	public sealed class GenericCreator
 	{

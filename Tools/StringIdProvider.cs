@@ -1,7 +1,7 @@
-﻿using KibiHex.Ids;
+﻿using DVG.Ids;
 using System.Collections.Generic;
 
-namespace KibiHex.Core.Tools
+namespace DVG.Core.Tools
 {
 	public abstract class StringIdProvider<T, V> : IStringIdProvider<V>
 		where T : StringIdProvider<T, V>, new()

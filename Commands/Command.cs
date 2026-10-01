@@ -1,6 +1,6 @@
-﻿using KibiHex.Components;
+﻿using DVG.Components;
 
-namespace KibiHex.Commands
+namespace DVG.Commands
 {
 	public struct Command<D>
 	{

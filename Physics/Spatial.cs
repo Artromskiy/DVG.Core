@@ -1,6 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Delta;
+using System.Runtime.CompilerServices;
 
-namespace KibiHex.Physics
+namespace DVG.Physics
 {
 	public static class Spatial
 	{

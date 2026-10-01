@@ -1,4 +1,5 @@
-﻿namespace KibiHex
+﻿using Delta;
+namespace DVG
 {
 	public static class Constants
 	{

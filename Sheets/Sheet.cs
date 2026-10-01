@@ -1,4 +1,4 @@
-﻿namespace KibiHex.Sheets
+﻿namespace DVG.Sheets
 {
 	public readonly struct Sheet
 	{
