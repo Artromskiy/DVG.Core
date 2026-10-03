@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -44,7 +43,7 @@ namespace DVG.Sheets
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogError($"Failed to parse sheet: {e.Message}\n{e.StackTrace}");
+                DVG.Debug.Error(e);
             }
             return null;
         }

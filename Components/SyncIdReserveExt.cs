@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace DVG.Components
+﻿namespace DVG.Components
 {
 	public static class SyncIdReserveExt
 	{
@@ -11,7 +9,7 @@ namespace DVG.Components
 
 		public static SyncId GetNext(this ref SyncIdReserve syncIdReserve)
 		{
-			Debug.Assert(syncIdReserve.Current < syncIdReserve.First + syncIdReserve.Count);
+			DVG.Debug.Assert(syncIdReserve.Current < syncIdReserve.First + syncIdReserve.Count);
 			return syncIdReserve.Current++;
 		}
 	}

@@ -62,7 +62,7 @@ namespace DVG.Components
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Set(int tick, T? value)
         {
-            Debug.Assert(RollbackAssertion(tick), "Rollback called implicitly");
+            DVG.Debug.Assert(RollbackAssertion(tick), context: "Rollback called implicitly");
 
             if (_count > 0)
             {
@@ -72,8 +72,8 @@ namespace DVG.Components
                     _values[lastIdx] = value;
                     return;
                 }
-                if (NullableMarshalEquilityComparer.Default.EqualsRef(ref _values[lastIdx], ref value))
-                    return;
+                //if (NullableMarshalEquilityComparer.Default.EqualsRef(ref _values[lastIdx], ref value))
+                //    return;
             }
 
             EnsureCapacity();
