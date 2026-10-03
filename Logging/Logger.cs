@@ -4,15 +4,15 @@ namespace DVG
     {
         private sealed class NullLogger : ILogger
         {
-            public void Info(string message, string? method, string? filePath, object? context) { }
+            public void Info(string message, string? method, object? context) { }
 
-            public void Warn(string message, string? method, string? filePath, object? context) { }
+            public void Warn(string message, string? method, object? context) { }
 
-            public void Assert(bool condition, string? method, string? filePath, object? context) { }
+            public void Assert(bool condition, string? method, object? context) { }
 
-            public void Error(System.Exception exception, string? method, string? filePath, object? context) { }
+            public void Error(System.Exception exception, string? method, object? context) { }
 
-            public void Throw(System.Exception exception, string? method, string? filePath, object? context) { }
+            public void Throw(System.Exception exception, string? method, object? context) { }
         }
 
         private static readonly ILogger _nullLogger = new NullLogger();
