@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace DVG.Sheets
@@ -11,17 +10,8 @@ namespace DVG.Sheets
 	{
 		private const char Split = '/';
 		private const string Insertion = "{0}";
-		private static readonly JsonSerializerOptions _options = new() { WriteIndented = true };
-		public static string TsvToJson(string tsv, int headerRows) =>
-			TsvToJsonObject(tsv, headerRows).ToJsonString(_options);
-		public static string CsvToJson(string csv, int headerRows) =>
-			CsvToJsonObject(csv, headerRows).ToJsonString(_options);
-
-		public static JsonArray TsvToJsonObject(string csv, int headerRows) =>
-			ParseTable(ParseDsv(csv, '\t'), headerRows);
-
-		public static JsonArray CsvToJsonObject(string csv, int headerRows) =>
-			ParseTable(ParseDsv(csv, ','), headerRows);
+		public static JsonArray DsvToJsonObject(string dsv, int headerRows, char separator) =>
+			ParseTable(ParseDsv(dsv, separator), headerRows);
 
 		private static JsonArray ParseTable(string[,] table, int headerRows)
 		{
