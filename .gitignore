@@ -58,3 +58,9 @@ nunit-*.xml
 *.asmdef
 !Core.asmdef
 !Core.asmdef.meta
+
+# Local editor and macOS files
+.vscode/
+.idea/
+.DS_Store
+*.DotSettings.user

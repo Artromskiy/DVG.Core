@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../../../../Temp/obj/DVG.Main/</BaseIntermediateOutputPath>
+        <MSBuildProjectExtensionsPath>$(MSBuildThisFileDirectory)../../../../Temp/obj/DVG.Main/</MSBuildProjectExtensionsPath>
+        <BaseOutputPath>$(MSBuildThisFileDirectory)../../../../Temp/bin/DVG.Main/</BaseOutputPath>
+    </PropertyGroup>
+</Project>
