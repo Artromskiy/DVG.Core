@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Delta.Diagnostics" Version="0.0.7" />
     <PackageReference Include="DeltaMaths" Version="0.0.14" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageReference Include="System.Text.Json" Version="10.0.3" />
