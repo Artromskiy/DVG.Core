@@ -62,7 +62,7 @@ namespace DVG.Components
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Set(int tick, T? value)
         {
-            DVG.Debug.Assert(RollbackAssertion(tick), context: "Rollback called implicitly");
+            Delta.Diagnostics.Debug.Assert(RollbackAssertion(tick), context: "Rollback called implicitly");
 
             if (_count > 0)
             {

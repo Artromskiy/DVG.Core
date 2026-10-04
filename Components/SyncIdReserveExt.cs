@@ -9,7 +9,7 @@
 
 		public static SyncId GetNext(this ref SyncIdReserve syncIdReserve)
 		{
-			DVG.Debug.Assert(syncIdReserve.Current < syncIdReserve.First + syncIdReserve.Count);
+			Delta.Diagnostics.Debug.Assert(syncIdReserve.Current < syncIdReserve.First + syncIdReserve.Count);
 			return syncIdReserve.Current++;
 		}
 	}
